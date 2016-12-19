@@ -14,6 +14,9 @@
 * php
 * apache
 
+##Документация
+[Техническое задание](https://drive.google.com/drive/folders/0B-k9g1uUW39MazRrUzMyLUxFOUk)
+
 ##Список контрибьюторов
 [@github/avklubovich](../../../../avklubovich)
 [@github/AlexandrDedckov](../../../../AlexandrDedckov)
