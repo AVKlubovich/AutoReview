@@ -1,0 +1,51 @@
+#Ignore output
+_build
+
+#Ignore thumbnails created by windows
+Thumbs.db
+desktop.ini
+
+#Ignore build files
+*.obj
+*.exe
+*.lib
+*.tlb
+*.tlh
+
+#Ignore files build by Visual Studio
+*.pdb
+*.idc
+*.idb
+*.user
+*.aps
+*.pch
+*.ncb
+*.suo
+*.bak
+*.cache
+*.ilk
+*.log
+*.sbr
+*.sdf
+*.ipch
+*.opensdf
+
+#Ignore files build by Qt
+GeneratedFiles*/
+ui_*.h
+moc_*.cpp
+
+#Ignore temp. merge files
+*.orig
+*.autosave
+
+#Ignore autocomplete db
+_ReSharperPlatformVs*
+_ReSharper.Caches
+
+#Ignore local config
+config.in
+
+#Ignore fastcgi
+Debug
+Release
