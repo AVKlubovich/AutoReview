@@ -44,12 +44,12 @@ Core::Core()
         // Logs
         { "Log/FlushInterval", 1000 },
         { "Log/PrefixName", "auto_review.log" },
-        { "Log/Dir", "./Logs/" },
+        { "Log/Dir", "./logs/" },
         { "Log/MaxSize", 134217728 },   // 100 mb
 
         // DBManager
         { "DBManager/Host", "192.168.202.222" },
-        { "DBManager/Name", "okk_db" },
+        { "DBManager/Name", "auto_review_db" },
         { "DBManager/Type", "QPSQL" },
         { "DBManager/Port", 5432 },
         { "DBManager/User", "postgres" },
