@@ -7,7 +7,8 @@
 #include "network-core/RequestsManager/Users/ResponseLogin.h"
 #include "network-core/RequestsManager/Users/RequestLogin.h"
 
-#include "permissions/PermissionManager.h"
+#include "web-exchange/WebRequestManager.h"
+#include "web-exchange/WebRequest.h"
 
 #include "database/DBHelpers.h"
 #include "database/DBManager.h"
@@ -25,68 +26,126 @@ Login::Login(const Context& newContext)
 
 QSharedPointer<network::Response> Login::exec()
 {
-    qDebug() << __FUNCTION__ << " was runned" << QDateTime::currentDateTime();
+    auto& response = _context._responce;
+    response->setHeaders(_context._packet.headers());
+    auto webRequest = QSharedPointer<network::WebRequest>::create( "sub_qry" );
 
-    auto & responce = _context._responce;
-    responce->setHeaders(_context._packet.headers());
 
-    //decode incoming data
-    auto incomingData = _context._packet.body();
-    QSharedPointer<network::RequestLogin> requestLoginPtr(new network::RequestLogin(incomingData));
-    requestLoginPtr->fromVariant(incomingData);
+    auto incomingData = _context._packet.body().toMap();
+    auto uData = incomingData.value("body").toMap();
 
-    //create command response
-    QSharedPointer<network::ResponseLogin> response(new network::ResponseLogin(requestLoginPtr));
-
-    const auto login = requestLoginPtr->login();
-    const auto password = requestLoginPtr->password();
-    quint64 idUser;
-
-    QSharedPointer<database::DBWraper> wraper = database::DBManager::instance().getDBWraper();
-    QSqlQuery query = wraper->query();
-
-    // find id user
-    QString sqlQuery= QString("SELECT id FROM users_schema.users "
-                              "WHERE login = '%1' AND password = '%2' AND \"isVisible\" = 0")
-                      .arg(login).arg(password);
-    query.prepare(sqlQuery);
-
-    const auto queryResult = wraper->execQuery(query);
-    if (!queryResult)
+    if(!uData.contains("login") ||
+       !uData.contains("password"))
     {
-        qDebug() << query.lastError();
-        response->setError(query.lastError().text());
-        response->setStatus(network::ResponseLogin::StatusError);
-        return response;
+        setError(ERROR_LOGIN_OR_PASSWORD);
+        QSharedPointer<network::Response>();
     }
 
-    if (query.size())
+    auto webManager = network::WebRequestManager::instance();
+
+    QVariantMap userData;
+    userData["sub_qry"] = "get_auto_photo_validator_rights";
+    userData["user_login"] = uData.value("login");
+    userData["user_pass"] = QString(QCryptographicHash::hash(uData.value("password").toString().toStdString().data(),QCryptographicHash::Md5).toHex());
+    webRequest->setArguments(userData);
+    webRequest->setCallback(nullptr);
+
+    webManager->sendRequestCurrentThread(webRequest);
+
+    const auto data = webRequest->reply();
+    webRequest->release();
+
+    const auto doc = QJsonDocument::fromJson(data);
+    auto jobj = doc.object();
+    const auto map = jobj.toVariantMap();
+
+    if(!map.contains("status"))
     {
-        query.first();
-        idUser = query.value("id").toLongLong();
+        // TODO: db_error
+        qDebug() << __FUNCTION__ << "error: field not sended";
+        //Q_ASSERT(false);
+        return QSharedPointer<network::Response>();
+    }
 
-        sqlQuery= QString("SELECT * FROM users_schema.permissions WHERE id_user = %1")
-                  .arg(idUser);
-        query.prepare(sqlQuery);
+    const auto status = map.value("status").toInt();
+    if (status < 0)
+    {
+        setError(ERROR_LOGIN_OR_PASSWORD);
+        return QSharedPointer<network::Response>();
+    }
 
-        const auto queryResult = wraper->execQuery(query);
-        if (!queryResult)
+    if (!map.contains("full_name") ||
+        !map.contains("id"))
+    {
+        // TODO: db_error
+        qDebug() << __FUNCTION__ << "error: field not sended";
+        //Q_ASSERT(false);
+        return QSharedPointer<network::Response>();
+    }
+
+    bool rightOk = false;
+    const auto& rightsArray = map["array"].toList();
+    for (const auto& right : rightsArray)
+    {
+        const auto& rightMap = right.toMap();
+        if (rightMap["id_right"].toInt() == 1)
         {
-            qDebug() << query.lastError();
-            response->setError(query.lastError().text());
-            response->setStatus(network::ResponseLogin::StatusError);
-            return response;
+            rightOk = true;
+            continue;
         }
-
-        const auto resultList = database::DBHelpers::queryToVariant(query);
-        response->setUserRights(resultList);
-
-        response->setStatus(network::ResponseLogin::StatusSuccess);
     }
-    else
+
+    if (!rightOk)
     {
-        response->setStatus(network::ResponseLogin::StatusRejected);
+        setError(QObject::tr("Not have permission"));
+        return QSharedPointer<network::Response>();
     }
 
-    return response;
+    const auto insertUserQueryStr = QString(
+        "WITH upsert AS (UPDATE public.users SET name=:name1 WHERE id=:id1 RETURNING *)"
+        "INSERT INTO public.users (id, name) SELECT :id2, :name2 WHERE NOT EXISTS (SELECT * FROM upsert)"
+        );
+
+    const auto wraper = database::DBManager::instance().getDBWraper();
+    auto insertUserQuery = wraper->query();
+    insertUserQuery.prepare(insertUserQueryStr);
+    insertUserQuery.bindValue(":id1", map.value("id"));
+    insertUserQuery.bindValue(":name1", map.value("full_name"));
+    insertUserQuery.bindValue(":id2", map.value("id"));
+    insertUserQuery.bindValue(":name2", map.value("full_name"));
+
+    auto insertUserQueryResult = wraper->execQuery(insertUserQuery);
+    if (!insertUserQueryResult)
+    {
+        // TODO: db_error
+        qDebug() << __FUNCTION__ << "error:" << qPrintable(insertUserQuery.lastError().text());
+        //Q_ASSERT(false);
+        return QSharedPointer<network::Response>();
+    }
+
+    QVariantMap body, head, result;
+    QList <QVariant> listRights;
+    listRights.append(map["user_rights"]);
+    head["type"] = signature();
+    body["status"] = 1;
+    body["id_user"] = map["id"].toULongLong();
+    body["user_rights"] = listRights;
+    result["head"] = QVariant::fromValue(head);
+    result["body"] = QVariant::fromValue(body);
+    _context._responce->setBody(QVariant::fromValue(result));
+
+    return QSharedPointer<network::Response>();
+}
+
+void Login::setError(const QString& err)
+{
+    QVariantMap body;
+    QVariantMap head;
+    QVariantMap result;
+    head["type"] = signature();
+    body["status"] = -1;
+    body["error"] = err;
+    result["head"] = QVariant::fromValue(head);
+    result["body"] = QVariant::fromValue(body);
+    _context._responce->setBody(QVariant::fromValue(result));
 }
