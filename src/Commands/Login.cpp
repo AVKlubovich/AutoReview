@@ -101,7 +101,7 @@ QSharedPointer<network::Response> Login::exec()
         return QSharedPointer<network::Response>();
     }
 
-    const auto insertUserQueryStr = QString(
+    const auto& insertUserQueryStr = QString(
         "WITH upsert AS (UPDATE public.users SET name=:name1 WHERE id=:id1 RETURNING *)"
         "INSERT INTO public.users (id, name) SELECT :id2, :name2 WHERE NOT EXISTS (SELECT * FROM upsert)"
         );
