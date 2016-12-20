@@ -46,7 +46,7 @@ QSharedPointer<network::Response> Login::exec()
     QVariantMap userData;
     userData["sub_qry"] = "get_auto_photo_validator_rights";
     userData["user_login"] = uData.value("login");
-    userData["user_pass"] = QString(QCryptographicHash::hash(uData.value("password").toString().toStdString().data(),QCryptographicHash::Md5).toHex());
+    userData["user_pass"] = QString(QCryptographicHash::hash(uData.value("password").toString().toStdString().data(), QCryptographicHash::Md5).toHex());
     webRequest->setArguments(userData);
     webRequest->setCallback(nullptr);
 
@@ -106,13 +106,16 @@ QSharedPointer<network::Response> Login::exec()
         "INSERT INTO public.users (id, name) SELECT :id2, :name2 WHERE NOT EXISTS (SELECT * FROM upsert)"
         );
 
+    const quint64 userId = map.value("id").toULongLong();
+    const QString& fullName = map.value("full_name").toString();
+
     const auto wraper = database::DBManager::instance().getDBWraper();
     auto insertUserQuery = wraper->query();
     insertUserQuery.prepare(insertUserQueryStr);
-    insertUserQuery.bindValue(":id1", map.value("id"));
-    insertUserQuery.bindValue(":name1", map.value("full_name"));
-    insertUserQuery.bindValue(":id2", map.value("id"));
-    insertUserQuery.bindValue(":name2", map.value("full_name"));
+    insertUserQuery.bindValue(":id1", userId);
+    insertUserQuery.bindValue(":name1", fullName);
+    insertUserQuery.bindValue(":id2", userId);
+    insertUserQuery.bindValue(":name2", fullName);
 
     auto insertUserQueryResult = wraper->execQuery(insertUserQuery);
     if (!insertUserQueryResult)
@@ -128,7 +131,8 @@ QSharedPointer<network::Response> Login::exec()
     listRights.append(map["user_rights"]);
     head["type"] = signature();
     body["status"] = 1;
-    body["id_user"] = map["id"].toULongLong();
+    body["id_user"] = userId;
+    body["full_name"] = fullName;
     body["user_rights"] = listRights;
     result["head"] = QVariant::fromValue(head);
     result["body"] = QVariant::fromValue(body);
