@@ -1,5 +1,5 @@
 #include "Common.h"
-#include "GetAutoNumbers.h"
+#include "GetRelisedCarNumbers.h"
 
 #include "server-core/Commands/CommandFactory.h"
 #include "server-core/Responce/Responce.h"
@@ -14,17 +14,17 @@
 #include "database/DBManager.h"
 #include "database/DBWraper.h"
 
-RegisterCommand(auto_review::GetAutoNumbers, "get_auto_numbers")
+RegisterCommand(auto_review::GetRelisedCarNumber, "get_resised_car_numbers")
 
 
 using namespace auto_review;
 
-GetAutoNumbers::GetAutoNumbers(const Context& newContext)
+GetRelisedCarNumber::GetRelisedCarNumber(const Context& newContext)
     : Command(newContext)
 {
 }
 
-QSharedPointer<network::Response> GetAutoNumbers::exec()
+QSharedPointer<network::Response> GetRelisedCarNumber::exec()
 {
     auto& response = _context._responce;
     response->setHeaders(_context._packet.headers());
@@ -48,7 +48,7 @@ QSharedPointer<network::Response> GetAutoNumbers::exec()
     return QSharedPointer<network::Response>();
 }
 
-void GetAutoNumbers::setError(const QString& err)
+void GetRelisedCarNumber::setError(const QString& err)
 {
     QVariantMap body;
     QVariantMap head;
