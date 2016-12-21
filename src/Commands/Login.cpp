@@ -46,7 +46,7 @@ QSharedPointer<network::Response> Login::exec()
     QVariantMap userData;
     userData["sub_qry"] = "get_auto_photo_validator_rights";
     userData["user_login"] = uData.value("login");
-    userData["user_pass"] = QString(QCryptographicHash::hash(uData.value("password").toString().toStdString().data(), QCryptographicHash::Md5).toHex());
+    userData["user_pass"] = QString(QCryptographicHash::hash(uData.value("password").toString().toStdString().data(),QCryptographicHash::Md5).toHex());
     webRequest->setArguments(userData);
     webRequest->setCallback(nullptr);
 
@@ -62,24 +62,23 @@ QSharedPointer<network::Response> Login::exec()
     if(!map.contains("status"))
     {
         // TODO: db_error
+        setError(ERROR_LOGIN_OR_PASSWORD);
         qDebug() << __FUNCTION__ << "error: field not sended";
-        //Q_ASSERT(false);
         return QSharedPointer<network::Response>();
     }
 
     const auto status = map.value("status").toInt();
     if (status < 0)
     {
-        setError(ERROR_LOGIN_OR_PASSWORD);
+        setError(ERROR_LOGIN_OR_PASSWORD, 2);
         return QSharedPointer<network::Response>();
     }
 
     if (!map.contains("full_name") ||
         !map.contains("id"))
     {
-        // TODO: db_error
+        setError(ERROR_LOGIN_OR_PASSWORD);
         qDebug() << __FUNCTION__ << "error: field not sended";
-        //Q_ASSERT(false);
         return QSharedPointer<network::Response>();
     }
 
@@ -97,12 +96,12 @@ QSharedPointer<network::Response> Login::exec()
 
     if (!rightOk)
     {
-        setError(QObject::tr("Not have permission"));
+        setError(QObject::tr("Not have permission"), 3);
         return QSharedPointer<network::Response>();
     }
 
-    const auto& insertUserQueryStr = QString(
-        "WITH upsert AS (UPDATE public.users SET name=:name1 WHERE id=:id1 RETURNING *)"
+    const auto insertUserQueryStr = QString(
+        "WITH upsert AS (UPDATE public.users SET name=:name1 WHERE id = :id1 RETURNING *)"
         "INSERT INTO public.users (id, name) SELECT :id2, :name2 WHERE NOT EXISTS (SELECT * FROM upsert)"
         );
 
@@ -120,9 +119,8 @@ QSharedPointer<network::Response> Login::exec()
     auto insertUserQueryResult = wraper->execQuery(insertUserQuery);
     if (!insertUserQueryResult)
     {
-        // TODO: db_error
+        setError(ERROR_LOGIN_OR_PASSWORD);
         qDebug() << __FUNCTION__ << "error:" << qPrintable(insertUserQuery.lastError().text());
-        //Q_ASSERT(false);
         return QSharedPointer<network::Response>();
     }
 
@@ -141,13 +139,13 @@ QSharedPointer<network::Response> Login::exec()
     return QSharedPointer<network::Response>();
 }
 
-void Login::setError(const QString& err)
+void Login::setError(const QString& err, const quint64 status)
 {
     QVariantMap body;
     QVariantMap head;
     QVariantMap result;
     head["type"] = signature();
-    body["status"] = -1;
+    body["status"] = status;
     body["error"] = err;
     result["head"] = QVariant::fromValue(head);
     result["body"] = QVariant::fromValue(body);
