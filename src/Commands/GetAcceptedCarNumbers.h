@@ -13,14 +13,14 @@ namespace auto_review
 {
 
     // NOTE: нет водителя и на ремзоне
-    class GetReceptionCarNumbers :
+    class GetAcceptedCarNumbers :
             public core::Command,
-            public core::CommandCreator<GetReceptionCarNumbers>
+            public core::CommandCreator<GetAcceptedCarNumbers>
     {
-        friend class QSharedPointer<GetReceptionCarNumbers>;
+        friend class QSharedPointer<GetAcceptedCarNumbers>;
 
     private:
-        GetReceptionCarNumbers(const Context& newContext);
+        GetAcceptedCarNumbers(const Context& newContext);
 
     public:
         QSharedPointer<network::Response> exec() override;
