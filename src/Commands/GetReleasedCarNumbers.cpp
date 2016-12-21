@@ -14,7 +14,7 @@
 #include "database/DBManager.h"
 #include "database/DBWraper.h"
 
-RegisterCommand(auto_review::GetRelisedCarNumber, "get_released_car_numbers")
+RegisterCommand(auto_review::GetReleasedCarNumber, "get_released_car_numbers")
 
 
 using namespace auto_review;
