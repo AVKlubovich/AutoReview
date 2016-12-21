@@ -1,5 +1,5 @@
 #include "Common.h"
-#include "GetReceptionCarNumber.h"
+#include "GetAcceptedCarNumbers.h"
 
 #include "server-core/Commands/CommandFactory.h"
 #include "server-core/Responce/Responce.h"
@@ -14,17 +14,17 @@
 #include "database/DBManager.h"
 #include "database/DBWraper.h"
 
-RegisterCommand(auto_review::GetReceptionCarNumbers, "get_reception_car_numbers")
+RegisterCommand(auto_review::GetAcceptedCarNumbers, "get_accepted_car_numbers")
 
 
 using namespace auto_review;
 
-GetReceptionCarNumbers::GetReceptionCarNumbers(const Context& newContext)
+GetAcceptedCarNumbers::GetAcceptedCarNumbers(const Context& newContext)
     : Command(newContext)
 {
 }
 
-QSharedPointer<network::Response> GetReceptionCarNumbers::exec()
+QSharedPointer<network::Response> GetAcceptedCarNumbers::exec()
 {
     auto& response = _context._responce;
     response->setHeaders(_context._packet.headers());
@@ -49,7 +49,7 @@ QSharedPointer<network::Response> GetReceptionCarNumbers::exec()
     return QSharedPointer<network::Response>();
 }
 
-void GetReceptionCarNumbers::setError(const QString& err)
+void GetAcceptedCarNumbers::setError(const QString& err)
 {
     QVariantMap body;
     QVariantMap head;
