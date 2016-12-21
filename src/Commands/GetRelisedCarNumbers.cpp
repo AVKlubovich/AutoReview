@@ -37,11 +37,12 @@ QSharedPointer<network::Response> GetRelisedCarNumber::exec()
     body["status"] = 1;
     result["head"] = QVariant::fromValue(head);
     QVariantList autoNumbers;
-    autoNumbers << "к002ст23";
-    autoNumbers << "в170ьь161";
-    autoNumbers << "а853мр97";
-    autoNumbers << "р070вк92";
-    autoNumbers << "с065мк78";
+    autoNumbers << QVariant::fromValue(QVariantMap() = {{"id", 0}, {"number", "к002ст23"}});
+    autoNumbers << QVariant::fromValue(QVariantMap() = {{"id", 1}, {"number", "в170ьь161"}});
+    autoNumbers << QVariant::fromValue(QVariantMap() = {{"id", 2}, {"number", "а853мр97"}});
+    autoNumbers << QVariant::fromValue(QVariantMap() = {{"id", 3}, {"number", "р070вк92"}});
+    autoNumbers << QVariant::fromValue(QVariantMap() = {{"id", 4}, {"number", "с065мк78"}});
+    body["cars"] = autoNumbers;
     result["body"] = QVariant::fromValue(body);
     _context._responce->setBody(QVariant::fromValue(result));
 
