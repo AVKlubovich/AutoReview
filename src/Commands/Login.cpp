@@ -87,6 +87,7 @@ QSharedPointer<network::Response> Login::exec()
     bool basicRight = false;
     bool parkRight = false;
     quint64 idPark = -1;
+    QString parkName;
     const auto& rightsArray = map["array"].toList();
     for (const auto& right : rightsArray)
     {
@@ -101,6 +102,7 @@ QSharedPointer<network::Response> Login::exec()
         {
             parkRight = true;
             idPark = rightMap["id_park"].toULongLong();
+            parkName = rightMap["name"].toString();
         }
     }
 
@@ -135,14 +137,12 @@ QSharedPointer<network::Response> Login::exec()
     }
 
     QVariantMap body, head, result;
-    QList <QVariant> listRights;
-    listRights.append(map["user_rights"]);
     head["type"] = signature();
     body["status"] = 1;
     body["id_user"] = userId;
     body["full_name"] = fullName;
-    body["user_rights"] = listRights;
-    body["id_park"] = 3; // TODO: временно
+    body["id_park"] = idPark;
+    body["park_name"] = parkName;
     result["head"] = QVariant::fromValue(head);
     result["body"] = QVariant::fromValue(body);
     _context._responce->setBody(QVariant::fromValue(result));
