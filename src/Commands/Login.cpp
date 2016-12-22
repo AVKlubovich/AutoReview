@@ -94,9 +94,10 @@ QSharedPointer<network::Response> Login::exec()
         }
     }
 
-    if (!rightOk)
+//    if (!rightOk)
+    if (false)
     {
-        sendError(QObject::tr("Нет прав для работы в AutoReview"), "authotization_error" );
+        sendError(QObject::tr("Нет прав для работы в AutoReview"), "authotization_error", signature());
         return QSharedPointer<network::Response>();
     }
 
@@ -132,6 +133,7 @@ QSharedPointer<network::Response> Login::exec()
     body["id_user"] = userId;
     body["full_name"] = fullName;
     body["user_rights"] = listRights;
+    body["id_park"] = 3; // TODO: временно
     result["head"] = QVariant::fromValue(head);
     result["body"] = QVariant::fromValue(body);
     _context._responce->setBody(QVariant::fromValue(result));
