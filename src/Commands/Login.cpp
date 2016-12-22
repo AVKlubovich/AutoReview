@@ -87,7 +87,7 @@ QSharedPointer<network::Response> Login::exec()
     for (const auto& right : rightsArray)
     {
         const auto& rightMap = right.toMap();
-        if (rightMap["id_right"].toInt() == 1)
+        if (rightMap["id_right"].toInt() == 1) // TODO: узнать конкретный id прав для механика
         {
             rightOk = true;
             continue;
@@ -96,7 +96,7 @@ QSharedPointer<network::Response> Login::exec()
 
     if (!rightOk)
     {
-        setError(QObject::tr("Not have permission"), 3);
+        sendError(QObject::tr("Нет прав для работы в AutoReview"), "authotization_error" );
         return QSharedPointer<network::Response>();
     }
 
