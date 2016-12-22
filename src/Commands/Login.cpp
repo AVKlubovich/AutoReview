@@ -44,9 +44,9 @@ QSharedPointer<network::Response> Login::exec()
     auto webManager = network::WebRequestManager::instance();
 
     QVariantMap userData;
-    userData["sub_qry"] = "get_auto_photo_validator_rights";
+    userData["sub_qry"] = "get_auto_review_rights";
     userData["user_login"] = uData.value("login");
-    userData["user_pass"] = QString(QCryptographicHash::hash(uData.value("password").toString().toStdString().data(),QCryptographicHash::Md5).toHex());
+    userData["user_pass"] = QString(QCryptographicHash::hash(uData.value("password").toString().toStdString().data(), QCryptographicHash::Md5).toHex());
     webRequest->setArguments(userData);
     webRequest->setCallback(nullptr);
 

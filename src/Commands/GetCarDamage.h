@@ -12,14 +12,14 @@ namespace network
 namespace auto_review
 {
 
-    class CarAccessories :
+    class GetCarDamage :
             public core::Command,
-            public core::CommandCreator<CarAccessories>
+            public core::CommandCreator<GetCarDamage>
     {
-        friend class QSharedPointer<CarAccessories>;
+        friend class QSharedPointer<GetCarDamage>;
 
     private:
-        CarAccessories(const Context& newContext);
+        GetCarDamage(const Context& newContext);
 
     public:
         QSharedPointer<network::Response> exec() override;

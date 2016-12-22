@@ -12,25 +12,20 @@ namespace network
 namespace auto_review
 {
 
-    class SelectDamageCar :
+    class GetCarAccessories :
             public core::Command,
-            public core::CommandCreator<SelectDamageCar>
+            public core::CommandCreator<GetCarAccessories>
     {
-        friend class QSharedPointer<SelectDamageCar>;
+        friend class QSharedPointer<GetCarAccessories>;
 
     private:
-        SelectDamageCar(const Context& newContext);
+        GetCarAccessories(const Context& newContext);
 
     public:
         QSharedPointer<network::Response> exec() override;
 
     private:
-        void setError(const QString & err);
-
-    private:
         QSharedPointer<network::WebRequestManager> _webManager;
-
-        const QString ERROR_LOGIN_OR_PASSWORD = "Неверный логин и/или пароль";
     };
 
 }

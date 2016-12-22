@@ -50,16 +50,3 @@ QSharedPointer<network::Response> GetAcceptedCarNumbers::exec()
 
     return QSharedPointer<network::Response>();
 }
-
-void GetAcceptedCarNumbers::setError(const QString& err)
-{
-    QVariantMap body;
-    QVariantMap head;
-    QVariantMap result;
-    head["type"] = signature();
-    body["status"] = -1;
-    body["error"] = err;
-    result["head"] = QVariant::fromValue(head);
-    result["body"] = QVariant::fromValue(body);
-    _context._responce->setBody(QVariant::fromValue(result));
-}

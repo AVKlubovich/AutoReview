@@ -1,5 +1,5 @@
 #include "Common.h"
-#include "SelectDamageCar.h"
+#include "GetCarDamage.h"
 
 #include "server-core/Commands/CommandFactory.h"
 #include "server-core/Responce/Responce.h"
@@ -14,17 +14,17 @@
 #include "database/DBManager.h"
 #include "database/DBWraper.h"
 
-RegisterCommand(auto_review::SelectDamageCar, "select_damage_car")
+RegisterCommand(auto_review::GetCarDamage, "get_car_damage")
 
 
 using namespace auto_review;
 
-SelectDamageCar::SelectDamageCar(const Context& newContext)
+GetCarDamage::GetCarDamage(const Context& newContext)
     : Command(newContext)
 {
 }
 
-QSharedPointer<network::Response> SelectDamageCar::exec()
+QSharedPointer<network::Response> GetCarDamage::exec()
 {
     auto& response = _context._responce;
     response->setHeaders(_context._packet.headers());
@@ -76,7 +76,7 @@ QSharedPointer<network::Response> SelectDamageCar::exec()
     return QSharedPointer<network::Response>();
 }
 
-void SelectDamageCar::setError(const QString& err)
+void GetCarDamage::setError(const QString& err)
 {
     QVariantMap body;
     QVariantMap head;
