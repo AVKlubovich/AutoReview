@@ -26,9 +26,6 @@ namespace auto_review
         QSharedPointer<network::Response> exec() override;
 
     private:
-        void setError(const QString & err);
-
-    private:
         QSharedPointer<network::WebRequestManager> _webManager;
     };
 

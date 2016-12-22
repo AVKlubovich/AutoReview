@@ -37,6 +37,7 @@ QSharedPointer<network::Response> GetAcceptedCarNumbers::exec()
     body["status"] = 1;
     result["head"] = QVariant::fromValue(head);
     QVariantList autoNumbers;
+    autoNumbers << QVariant::fromValue(QVariantMap() = {{"id", 0}, {"number", "в104ту178"}});
     autoNumbers << QVariant::fromValue(QVariantMap() = {{"id", 0}, {"number", "к002ст23"}});
     autoNumbers << QVariant::fromValue(QVariantMap() = {{"id", 0}, {"number", "кк002ст23"}});
     autoNumbers << QVariant::fromValue(QVariantMap() = {{"id", 1}, {"number", "в170ьь161"}});
@@ -49,17 +50,4 @@ QSharedPointer<network::Response> GetAcceptedCarNumbers::exec()
     _context._responce->setBody(QVariant::fromValue(result));
 
     return QSharedPointer<network::Response>();
-}
-
-void GetAcceptedCarNumbers::setError(const QString& err)
-{
-    QVariantMap body;
-    QVariantMap head;
-    QVariantMap result;
-    head["type"] = signature();
-    body["status"] = -1;
-    body["error"] = err;
-    result["head"] = QVariant::fromValue(head);
-    result["body"] = QVariant::fromValue(body);
-    _context._responce->setBody(QVariant::fromValue(result));
 }

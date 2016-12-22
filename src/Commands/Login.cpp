@@ -14,6 +14,8 @@
 #include "database/DBManager.h"
 #include "database/DBWraper.h"
 
+#include "Definitions.h"
+
 RegisterCommand(auto_review::Login, "login")
 
 
@@ -44,9 +46,9 @@ QSharedPointer<network::Response> Login::exec()
     auto webManager = network::WebRequestManager::instance();
 
     QVariantMap userData;
-    userData["sub_qry"] = "get_auto_photo_validator_rights";
+    userData["sub_qry"] = "get_auto_review_rights";
     userData["user_login"] = uData.value("login");
-    userData["user_pass"] = QString(QCryptographicHash::hash(uData.value("password").toString().toStdString().data(),QCryptographicHash::Md5).toHex());
+    userData["user_pass"] = QString(QCryptographicHash::hash(uData.value("password").toString().toStdString().data(), QCryptographicHash::Md5).toHex());
     webRequest->setArguments(userData);
     webRequest->setCallback(nullptr);
 
@@ -82,21 +84,31 @@ QSharedPointer<network::Response> Login::exec()
         return QSharedPointer<network::Response>();
     }
 
-    bool rightOk = false;
+    bool basicRight = false;
+    bool parkRight = false;
+    quint64 idPark = -1;
+    QString parkName;
     const auto& rightsArray = map["array"].toList();
     for (const auto& right : rightsArray)
     {
         const auto& rightMap = right.toMap();
-        if (rightMap["id_right"].toInt() == 1)
+        const auto idRight = rightMap["id_right"].toInt();
+
+        if (idRight == BASIC_RIGHT)
         {
-            rightOk = true;
-            continue;
+            basicRight = true;
+        }
+        else if (idRight == PARK_RIGHT)
+        {
+            parkRight = true;
+            idPark = rightMap["id_park"].toULongLong();
+            parkName = rightMap["name"].toString();
         }
     }
 
-    if (!rightOk)
+    if (!basicRight || !parkRight || idPark == -1)
     {
-        setError(QObject::tr("Not have permission"), 3);
+        sendError(QObject::tr("Нет прав для работы в AutoReview"), "authotization_error", signature());
         return QSharedPointer<network::Response>();
     }
 
@@ -125,13 +137,12 @@ QSharedPointer<network::Response> Login::exec()
     }
 
     QVariantMap body, head, result;
-    QList <QVariant> listRights;
-    listRights.append(map["user_rights"]);
     head["type"] = signature();
     body["status"] = 1;
     body["id_user"] = userId;
     body["full_name"] = fullName;
-    body["user_rights"] = listRights;
+    body["id_park"] = idPark;
+    body["park_name"] = parkName;
     result["head"] = QVariant::fromValue(head);
     result["body"] = QVariant::fromValue(body);
     _context._responce->setBody(QVariant::fromValue(result));
