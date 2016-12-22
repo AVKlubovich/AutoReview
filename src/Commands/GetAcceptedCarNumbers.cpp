@@ -37,6 +37,7 @@ QSharedPointer<network::Response> GetAcceptedCarNumbers::exec()
     body["status"] = 1;
     result["head"] = QVariant::fromValue(head);
     QVariantList autoNumbers;
+    autoNumbers << QVariant::fromValue(QVariantMap() = {{"id", 0}, {"number", "в104ту178"}});
     autoNumbers << QVariant::fromValue(QVariantMap() = {{"id", 0}, {"number", "к002ст23"}});
     autoNumbers << QVariant::fromValue(QVariantMap() = {{"id", 0}, {"number", "кк002ст23"}});
     autoNumbers << QVariant::fromValue(QVariantMap() = {{"id", 1}, {"number", "в170ьь161"}});
