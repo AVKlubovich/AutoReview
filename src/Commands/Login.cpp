@@ -14,6 +14,8 @@
 #include "database/DBManager.h"
 #include "database/DBWraper.h"
 
+#include "Definitions.h"
+
 RegisterCommand(auto_review::Login, "login")
 
 
@@ -82,20 +84,27 @@ QSharedPointer<network::Response> Login::exec()
         return QSharedPointer<network::Response>();
     }
 
-    bool rightOk = false;
+    bool basicRight = false;
+    bool parkRight = false;
+    quint64 idPark = -1;
     const auto& rightsArray = map["array"].toList();
     for (const auto& right : rightsArray)
     {
         const auto& rightMap = right.toMap();
-        if (rightMap["id_right"].toInt() == 1) // TODO: узнать конкретный id прав для механика
+        const auto idRight = rightMap["id_right"].toInt();
+
+        if (idRight == BASIC_RIGHT)
         {
-            rightOk = true;
-            continue;
+            basicRight = true;
+        }
+        else if (idRight == PARK_RIGHT)
+        {
+            parkRight = true;
+            idPark = rightMap["id_park"].toULongLong();
         }
     }
 
-//    if (!rightOk)
-    if (false)
+    if (!basicRight || !parkRight || idPark == -1)
     {
         sendError(QObject::tr("Нет прав для работы в AutoReview"), "authotization_error", signature());
         return QSharedPointer<network::Response>();
