@@ -1,15 +1,6 @@
 #include "Common.h"
 #include "GetCarDamage.h"
 
-#include "server-core/Commands/CommandFactory.h"
-#include "server-core/Responce/Responce.h"
-
-#include "network-core/RequestsManager/Users/ResponseLogin.h"
-#include "network-core/RequestsManager/Users/RequestLogin.h"
-
-#include "web-exchange/WebRequestManager.h"
-#include "web-exchange/WebRequest.h"
-
 #include "database/DBHelpers.h"
 #include "database/DBManager.h"
 #include "database/DBWraper.h"
@@ -49,7 +40,11 @@ QSharedPointer<network::Response> GetCarDamage::exec()
     bool addCarQueryResult = wraper->execQuery(addQuery);
 
     if (!addCarQueryResult)
-        setError("error select car_damage");
+    {
+        sendError("error select car_damage", "error", signature());
+        return QSharedPointer<network::Response>();
+    }
+
     const auto listCar = database::DBHelpers::queryToVariant(addQuery);
 
     const auto sqlQueryPhotos = QString("SELECT *"
@@ -60,7 +55,10 @@ QSharedPointer<network::Response> GetCarDamage::exec()
     bool addPhotosQueryResult = wraper->execQuery(addQuery);
 
     if (!addPhotosQueryResult)
-        setError("error select photos");
+    {
+        sendError("error select photos", "error", signature());
+        return QSharedPointer<network::Response>();
+    }
     const auto listPhotos = database::DBHelpers::queryToVariant(addQuery);
 
     QVariantMap body, head, result;
@@ -74,17 +72,4 @@ QSharedPointer<network::Response> GetCarDamage::exec()
     _context._responce->setBody(QVariant::fromValue(result));
 
     return QSharedPointer<network::Response>();
-}
-
-void GetCarDamage::setError(const QString& err)
-{
-    QVariantMap body;
-    QVariantMap head;
-    QVariantMap result;
-    head["type"] = signature();
-    body["status"] = -1;
-    body["error"] = err;
-    result["head"] = QVariant::fromValue(head);
-    result["body"] = QVariant::fromValue(body);
-    _context._responce->setBody(QVariant::fromValue(result));
 }
