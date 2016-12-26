@@ -1,20 +1,20 @@
 #pragma once
 
-
 #include "server-core/Commands/CommandFactory.h"
 #include "server-core/Responce/Responce.h"
+
 
 namespace auto_review
 {
 
-    class GetCarAccessories :
+    class SaveCarAccessories :
             public core::Command,
-            public core::CommandCreator<GetCarAccessories>
+            public core::CommandCreator<SaveCarAccessories>
     {
-        friend class QSharedPointer<GetCarAccessories>;
+        friend class QSharedPointer<SaveCarAccessories>;
 
     private:
-        GetCarAccessories(const Context& newContext);
+        SaveCarAccessories(const Context& newContext);
 
     public:
         QSharedPointer<network::Response> exec() override;
