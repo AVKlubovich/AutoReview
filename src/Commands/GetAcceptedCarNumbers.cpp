@@ -29,6 +29,32 @@ QSharedPointer<network::Response> GetAcceptedCarNumbers::exec()
     auto& response = _context._responce;
     response->setHeaders(_context._packet.headers());
 
+    auto incomingData = _context._packet.body().toMap();
+    auto bodyData = incomingData.value("body").toMap();
+
+    const auto parkId = bodyData["id_park"].toInt();
+
+    auto webManager = network::WebRequestManager::instance();
+    auto webRequest = network::WebRequestShp::create("sub_qry");
+
+    QVariantMap userData;
+    userData["sub_qry"] = "get_autos_data";
+    userData["park"] = parkId;
+    userData["our"] = 0;
+    userData["user_login"] = bodyData.value("login");
+    userData["user_pass"] = QString(QCryptographicHash::hash(bodyData.value("password").toString().toStdString().data(), QCryptographicHash::Md5).toHex());
+    webRequest->setArguments(userData);
+    webRequest->setCallback(nullptr);
+
+    webManager->sendRequestCurrentThread(webRequest);
+
+    const auto data = webRequest->reply();
+    webRequest->release();
+
+    const auto doc = QJsonDocument::fromJson(data);
+    auto jobj = doc.object();
+    const auto map = jobj.toVariantMap();
+
     QVariantMap body;
     QVariantMap head;
     QVariantMap result;
