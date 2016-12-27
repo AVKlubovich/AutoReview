@@ -1,15 +1,6 @@
 #include "Common.h"
 #include "GetCarAccessories.h"
 
-#include "server-core/Commands/CommandFactory.h"
-#include "server-core/Responce/Responce.h"
-
-#include "network-core/RequestsManager/Users/ResponseLogin.h"
-#include "network-core/RequestsManager/Users/RequestLogin.h"
-
-#include "web-exchange/WebRequestManager.h"
-#include "web-exchange/WebRequest.h"
-
 #include "database/DBHelpers.h"
 #include "database/DBManager.h"
 #include "database/DBWraper.h"
@@ -45,13 +36,15 @@ QSharedPointer<network::Response> GetCarAccessories::exec()
 
     if (!addCarQueryResult)
     {
-        sendError("");
+        sendError("error select car_accessories", "error", signature());
         return network::ResponseShp();
     }
     const auto listAccessories = database::DBHelpers::queryToVariant(addQuery);
 
 
-    QVariantMap body, head, result;
+    QVariantMap body;
+    QVariantMap head;
+    QVariantMap result;
     head["type"] = signature();
     body["status"] = 1;
     body["accessories"] = listAccessories;

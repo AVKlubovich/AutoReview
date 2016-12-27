@@ -1,20 +1,11 @@
 #include "Common.h"
 #include "SaveDamageCar.h"
 
-#include "server-core/Commands/CommandFactory.h"
-#include "server-core/Responce/Responce.h"
-
-#include "network-core/RequestsManager/Users/ResponseLogin.h"
-#include "network-core/RequestsManager/Users/RequestLogin.h"
-
-#include "web-exchange/WebRequestManager.h"
-#include "web-exchange/WebRequest.h"
-
 #include "database/DBHelpers.h"
 #include "database/DBManager.h"
 #include "database/DBWraper.h"
 
-RegisterCommand(auto_review::SaveDamageCar, "save_injury_car")
+RegisterCommand(auto_review::SaveDamageCar, "save_damage_car")
 
 
 using namespace auto_review;
@@ -31,7 +22,7 @@ QSharedPointer<network::Response> SaveDamageCar::exec()
     auto incomingData = _context._packet.body().toMap();
     auto uData = incomingData.value("body").toMap();
 
-    const auto id = uData["id"].toString();
+    const auto id = uData["id"].toLongLong();
     const auto id_element_damage = uData["id_element"].toInt();
     const auto type_damage = uData["type"].toInt();
     const auto comment = uData["comment"].toString();
@@ -49,7 +40,10 @@ QSharedPointer<network::Response> SaveDamageCar::exec()
         bool addPhotosQueryResult = wraper->execQuery(addQuery);
 
         if (!addPhotosQueryResult)
-            setError("error insert photos");
+        {
+            sendError("error insert photos", "error", signature());
+            return QSharedPointer<network::Response>();
+        }
     }
 
     const auto sqlQuery = QString("INSERT INTO car_damage (id_car, id_element_damage, type_damage, comment, date_create)"
@@ -62,7 +56,10 @@ QSharedPointer<network::Response> SaveDamageCar::exec()
     bool addPhotosQueryResult = wraper->execQuery(addQuery);
 
     if (!addPhotosQueryResult)
-        setError("error insert car_damage");
+    {
+        sendError("error insert car_damage", "error", signature());
+        return QSharedPointer<network::Response>();
+    }
 
 
     QVariantMap body, head, result;
@@ -73,17 +70,4 @@ QSharedPointer<network::Response> SaveDamageCar::exec()
     _context._responce->setBody(QVariant::fromValue(result));
 
     return QSharedPointer<network::Response>();
-}
-
-void SaveDamageCar::setError(const QString& err)
-{
-    QVariantMap body;
-    QVariantMap head;
-    QVariantMap result;
-    head["type"] = signature();
-    body["status"] = -1;
-    body["error"] = err;
-    result["head"] = QVariant::fromValue(head);
-    result["body"] = QVariant::fromValue(body);
-    _context._responce->setBody(QVariant::fromValue(result));
 }
