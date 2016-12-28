@@ -61,7 +61,7 @@ QSharedPointer<network::Response> Login::exec()
     auto jobj = doc.object();
     const auto map = jobj.toVariantMap();
 
-    if(!map.contains("status"))
+    if (!map.contains("status"))
     {
         // TODO: db_error
         setError(ERROR_LOGIN_OR_PASSWORD);
