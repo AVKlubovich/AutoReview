@@ -86,7 +86,7 @@ QSharedPointer<network::Response> Login::exec()
 
     bool basicRight = false;
     bool parkRight = false;
-    quint64 idPark = -1;
+    qint64 idPark = -1;
     QString parkName;
     const auto& rightsArray = map["array"].toList();
     for (const auto& right : rightsArray)
