@@ -5,7 +5,7 @@
 #include "database/DBManager.h"
 #include "database/DBWraper.h"
 
-RegisterCommand(auto_review::GetCarAccessories, "select_car_accessories")
+RegisterCommand(auto_review::GetCarAccessories, "get_car_accessories")
 
 
 using namespace auto_review;
@@ -22,13 +22,13 @@ QSharedPointer<network::Response> GetCarAccessories::exec()
     const auto& incomingData = _context._packet.body().toMap();
     auto uData = incomingData.value("body").toMap();
 
-    const auto id = uData["id"].toString();
+    const auto id = uData["id_car"].toString();
     const auto wraper = database::DBManager::instance().getDBWraper();
     auto addQuery = wraper->query();
 
     const auto& sqlQuery = QString(
-        "SELECT * "
-        "FROM car_accessories"
+        "SELECT id_accessories AS id, status "
+        "FROM car_accessories "
         "WHERE id_car=:id");
     addQuery.prepare(sqlQuery);
     addQuery.bindValue(":id", id);
