@@ -1,5 +1,5 @@
 #include "Common.h"
-#include "GetAcceptedCarNumbers.h"
+#include "GetCarInfo.h"
 
 #include "server-core/Commands/CommandFactory.h"
 #include "server-core/Responce/Responce.h"
@@ -7,21 +7,17 @@
 #include "web-exchange/WebRequestManager.h"
 #include "web-exchange/WebRequest.h"
 
-#include "database/DBHelpers.h"
-#include "database/DBManager.h"
-#include "database/DBWraper.h"
-
-RegisterCommand(auto_review::GetAcceptedCarNumbers, "get_accepted_car_numbers")
+RegisterCommand(auto_review::GetCarInfo, "get_car_info")
 
 
 using namespace auto_review;
 
-GetAcceptedCarNumbers::GetAcceptedCarNumbers(const Context& newContext)
+GetCarInfo::GetCarInfo(const Context& newContext)
     : Command(newContext)
 {
 }
 
-QSharedPointer<network::Response> GetAcceptedCarNumbers::exec()
+QSharedPointer<network::Response> GetCarInfo::exec()
 {
     auto& response = _context._responce;
     response->setHeaders(_context._packet.headers());
@@ -29,15 +25,14 @@ QSharedPointer<network::Response> GetAcceptedCarNumbers::exec()
     auto incomingData = _context._packet.body().toMap();
     auto bodyData = incomingData.value("body").toMap();
 
-    const auto parkId = bodyData["id_park"].toInt();
+    const auto autoId = bodyData["id_car"].toInt();
 
     auto webManager = network::WebRequestManager::instance();
     auto webRequest = network::WebRequestShp::create("type_query");
 
     QVariantMap userData;
     userData["type_query"] = "get_autos_data";
-    userData["park"] = QString::number(parkId);
-    userData["our"] = QString::number(0);
+    userData["auto_id"] = QString::number(autoId);
     userData["user_login"] = bodyData.value("login");
     userData["user_pass"] = QString(QCryptographicHash::hash(bodyData.value("password").toString().toStdString().data(), QCryptographicHash::Md5).toHex());
     webRequest->setArguments(userData);
@@ -67,15 +62,7 @@ QSharedPointer<network::Response> GetAcceptedCarNumbers::exec()
     }
 
     const auto& array = map["array"].toList();
-    QVariantList numbersList;
-    for (const auto& value : array)
-    {
-        QVariantMap valueMap = value.toMap();
-        QVariantMap numberMap;
-        numberMap.insert("id", valueMap["id"].toInt());
-        numberMap.insert("number", valueMap["number"].toString());
-        numbersList << QVariant::fromValue(numberMap);
-    }
+    const auto& infoMap = array.first().toMap();
 
     QVariantMap result;
 
@@ -85,7 +72,7 @@ QSharedPointer<network::Response> GetAcceptedCarNumbers::exec()
 
     QVariantMap body;
     body["status"] = 1;
-    body["cars"] = numbersList;
+    body["info"] = QVariant::fromValue(infoMap);
     result["body"] = QVariant::fromValue(body);
     _context._responce->setBody(QVariant::fromValue(result));
 
