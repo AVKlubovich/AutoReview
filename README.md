@@ -14,10 +14,11 @@
 * PostgreSql v9.4 и выше
 * php
 * apache
+* Qt5.5 >
 
 ##Документация
 [Техническое задание](https://drive.google.com/drive/folders/0B-k9g1uUW39MazRrUzMyLUxFOUk)
 
 ##Список контрибьюторов
-[@github/avklubovich](../../../../avklubovich)  
-[@github/AlexandrDedckov](../../../../AlexandrDedckov)
+[Борода](../../../../avklubovich @github/avklubovich)  
+[Санёчек](../../../../AlexandrDedckov @github/AlexandrDedckov)
