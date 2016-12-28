@@ -16,7 +16,7 @@
 * apache
 
 ##Документация
-[Техническое задание](https://drive.google.com/drive/folders/0B-k9g1uUW39MazRrUzMyLUxFOUk)
+[Техническое задание](https://drive.google.com/drive/folders/0B-k9g1uUW39MazRrUzMyLUxFOUk "хрен знает что")
 
 ##Список контрибьюторов
 [@github/avklubovich](../../../../avklubovich)  
