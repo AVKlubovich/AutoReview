@@ -20,5 +20,5 @@
 [Техническое задание](https://drive.google.com/drive/folders/0B-k9g1uUW39MazRrUzMyLUxFOUk)
 
 ##Список контрибьюторов
-[Борода](../../../../avklubovich @github/avklubovich)  
+[Отец Александр](../../../../avklubovich @github/avklubovich)  
 [Санёчек](../../../../AlexandrDedckov @github/AlexandrDedckov)
