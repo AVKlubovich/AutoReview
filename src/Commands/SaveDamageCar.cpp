@@ -20,13 +20,13 @@ QSharedPointer<network::Response> SaveDamageCar::exec()
     auto& response = _context._responce;
     response->setHeaders(_context._packet.headers());
     auto incomingData = _context._packet.body().toMap();
-    auto uData = incomingData.value("body").toMap();
+    auto mapData = incomingData.value("body").toMap();
 
-    const auto id = uData["id_car"].toLongLong();
-    const auto id_element_damage = uData["id_element"].toInt();
-    const auto type_damage = uData["id_damage"].toInt();
-    const auto comment = uData["comment"].toString();
-    auto listUrlsPhoto = uData["urls"].toList();
+    const auto id = mapData["id_car"].toLongLong();
+    const auto id_element_damage = mapData["id_element"].toInt();
+    const auto type_damage = mapData["id_damage"].toInt();
+    const auto comment = mapData["comment"].toString();
+    auto listUrlsPhoto = mapData["urls"].toList();
 
     const auto wraper = database::DBManager::instance().getDBWraper();
     auto addQuery = wraper->query();
@@ -48,7 +48,7 @@ QSharedPointer<network::Response> SaveDamageCar::exec()
     }
     const auto idCarDamage = addQuery.value("id").toLongLong();
 
-    for (auto url : listUrlsPhoto)
+    for (const auto &url : listUrlsPhoto)
     {
         const auto sqlQuery = QString("INSERT INTO photos (id_car_damage, url) VALUES (:id, :url)");
         addQuery.prepare(sqlQuery);

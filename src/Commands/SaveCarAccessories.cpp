@@ -20,18 +20,19 @@ QSharedPointer<network::Response> SaveCarAccessories::exec()
     auto& response = _context._responce;
     response->setHeaders(_context._packet.headers());
     auto incomingData = _context._packet.body().toMap();
-    auto uData = incomingData.value("body").toMap();
+    auto mapData = incomingData.value("body").toMap();
 
-    const auto id = uData["id_car"].toLongLong();
-    auto listAccessories = uData["accessories"].toList();
+    const auto id = mapData["id_car"].toLongLong();
+    auto listAccessories = mapData["accessories"].toList();
 
     const auto wraper = database::DBManager::instance().getDBWraper();
     auto updateQuery = wraper->query();
 
-    for (auto element : listAccessories)
+    for (const auto &element : listAccessories)
     {
         auto map = element.toMap();
-        const auto sqlQuery = QString("UPDATE car_accessories SET status=:status, date_update=now(), comment=:comment WHERE id_car = :id AND id_accessory=:id_accessory");
+        const auto sqlQuery = QString("UPDATE car_accessories SET status=:status, date_update=now(), comment=:comment "
+                                      "WHERE id_car = :id AND id_accessory=:id_accessory");
         updateQuery.prepare(sqlQuery);
         updateQuery.bindValue(":id", id);
         updateQuery.bindValue(":status", map["status"]);
