@@ -63,9 +63,6 @@ QSharedPointer<network::Response> SaveDamageCar::exec()
         }
     }
 
-
-
-
     QVariantMap body, head, result;
     head["type"] = signature();
     body["status"] = 1;
