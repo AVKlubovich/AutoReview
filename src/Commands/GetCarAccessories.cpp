@@ -27,7 +27,7 @@ QSharedPointer<network::Response> GetCarAccessories::exec()
     auto addQuery = wraper->query();
 
     const auto& sqlQuery = QString(
-        "SELECT id_accessory AS id, status "
+        "SELECT id_accessory AS id, status, comment, date_update "
         "FROM car_accessories "
         "WHERE id_car=:id");
     addQuery.prepare(sqlQuery);

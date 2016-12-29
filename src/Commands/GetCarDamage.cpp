@@ -72,14 +72,14 @@ QVariantList GetCarDamage::listDamages(const QVariantList &list)
         const int id_damage = map["id"].toInt();
         const auto sqlQueryPhotos = QString("SELECT url"
                                             " FROM photos"
-                                            " WHERE photos.id_damage=:id");
+                                            " WHERE photos.id_car_damage=:id");
         selectQuery.prepare(sqlQueryPhotos);
         selectQuery.bindValue(":id", id_damage);
         bool addPhotosQueryResult = wraper->execQuery(selectQuery);
 
         QVariantList listPhotos;
         if (!addPhotosQueryResult)
-            listPhotos.append("error select photos from id_damage = " + QString::number(id_damage));
+            listPhotos.append("error select photos from id_car_damage = " + QString::number(id_damage));
         else
             listPhotos = database::DBHelpers::queryToVariant(selectQuery);
 
