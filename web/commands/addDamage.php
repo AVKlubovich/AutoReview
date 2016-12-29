@@ -1,6 +1,6 @@
 <?php
 
-class AddFile extends BaseFile
+class AddDamage extends BaseFile
 {
     public function exec(&$assoc)
     {
@@ -36,7 +36,7 @@ class AddFile extends BaseFile
                     'field' => "id_complaint"));
         }
 
-        $files = array();
+        $images = array();
         $file_url;
         $orig_file_name;
         foreach ($_FILES as $name=>$file)
@@ -48,14 +48,13 @@ class AddFile extends BaseFile
             $file_name = $this->saveFile(Config::TARGET_DIR_FILES, $file);
             $file_url = "$url_files$file_name";
 
-            array_push($files, $file);
-            echo "<p><a href=\"$url_files$file_name\">$url_files$file_name</a></p>";
+            array_push($images, $file);
+            //echo "<p><a href=\"$url_files$file_name\">$url_files$file_name</a></p>";
         }
 
-        $assoc["orig_file_name"] = $orig_file_name;
-        $assoc["file_url"] = $file_url;
+        $assoc["images"] = $images;
         $assoc["status"] = 1;
-        $assoc["type_command"] = "add_file";
+        $assoc["type_command"] = "save_damage_car";
 
         $result = NetworkManager::sendJson(Config::HOST_CPP, $assoc);
         if ($result == Errors::NOT_SEND_DATA_TO_REMORE_SERVER)

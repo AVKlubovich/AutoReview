@@ -21,16 +21,11 @@ require_once './commands/base/baseCommand.php';
 require_once './commands/base/basePhotos.php';
 require_once './commands/base/baseFile.php';
 
-require_once './commands/addFile.php';
-require_once './commands/removeFile.php';
-require_once './commands/getDriverPhoto.php';
-require_once './commands/getDriverCV.php';
+require_once './commands/addDamage.php';
 
 
 class Query
 {
-//{ "driver_full_name":"test", "driver_phone_number":"1111111", "driver_id":"11", "auto_color":"yelow", "auto_model":"309", "auto_marka":"pegot", "auto_number":"1111", "franchising_name":"", "auto_id":"1" }
-
     public function run()
     {        
         if (empty($_POST) ||
@@ -65,20 +60,14 @@ class Query
                 array('status' => $result, 
                 'error' => Errors::instance()->data($result)));
         }
-                
+        
         Utils::printOk();
     }
     
     function getCommand($type_command)
     {
         if (Commands::ADD_FILE == $type_command)
-            return new AddFile();
-        elseif (Commands::REMOVE_FILE == $type_command)
-            return new RemoveFile();
-        elseif (Commands::GET_DRIVER_PHOTO == $type_command)
-            return new GetDriverPhoto();
-        elseif (Commands::GET_DRIVER_CV == $type_command)
-            return new GetDriverCV();
+            return new AddDamage();
         else
             return NULL;
     }
