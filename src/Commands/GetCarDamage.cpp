@@ -21,9 +21,9 @@ QSharedPointer<network::Response> GetCarDamage::exec()
     auto& response = _context._responce;
     response->setHeaders(_context._packet.headers());
     auto incomingData = _context._packet.body().toMap();
-    auto uData = incomingData.value("body").toMap();
+    auto mapData = incomingData.value("body").toMap();
 
-    const auto id = uData["id_car"].toLongLong();
+    const auto id = mapData["id_car"].toLongLong();
     const auto wraper = database::DBManager::instance().getDBWraper();
     auto selectQuery = wraper->query();
 
@@ -47,7 +47,9 @@ QSharedPointer<network::Response> GetCarDamage::exec()
 
     const auto listCar = database::DBHelpers::queryToVariant(selectQuery);
 
-    QVariantMap body, head, result;
+    QVariantMap body;
+    QVariantMap head;
+    QVariantMap result;
     head["type"] = signature();
     body["status"] = 1;
     body["damages"] = listDamages(listCar);
@@ -63,7 +65,7 @@ QVariantList GetCarDamage::listDamages(const QVariantList &list)
 {
     QVariantList listResult;
 
-    for (auto item : list)
+    for (const auto& item : list)
     {
         auto map = item.toMap();
         const auto wraper = database::DBManager::instance().getDBWraper();
@@ -72,14 +74,14 @@ QVariantList GetCarDamage::listDamages(const QVariantList &list)
         const int id_damage = map["id"].toInt();
         const auto sqlQueryPhotos = QString("SELECT url"
                                             " FROM photos"
-                                            " WHERE photos.id_damage=:id");
+                                            " WHERE photos.id_car_damage=:id");
         selectQuery.prepare(sqlQueryPhotos);
         selectQuery.bindValue(":id", id_damage);
         bool addPhotosQueryResult = wraper->execQuery(selectQuery);
 
         QVariantList listPhotos;
         if (!addPhotosQueryResult)
-            listPhotos.append("error select photos from id_damage = " + QString::number(id_damage));
+            listPhotos.append(QString("error select photos from id_car_damage = %1").arg(QString::number(id_damage)));
         else
             listPhotos = database::DBHelpers::queryToVariant(selectQuery);
 

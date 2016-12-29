@@ -20,25 +20,30 @@ QSharedPointer<network::Response> SaveCarAccessories::exec()
     auto& response = _context._responce;
     response->setHeaders(_context._packet.headers());
     auto incomingData = _context._packet.body().toMap();
-    auto uData = incomingData.value("body").toMap();
+    auto mapData = incomingData.value("body").toMap();
 
-    const auto id = uData["id"].toLongLong();
-    auto listAccessories = uData["accessories"].toList();
+    const auto id = mapData["id_car"].toLongLong();
+    auto listAccessories = mapData["accessories"].toList();
 
     const auto wraper = database::DBManager::instance().getDBWraper();
-    auto addQuery = wraper->query();
+    auto updateQuery = wraper->query();
 
-    for (auto id_element : listAccessories)
+    for (const auto &element : listAccessories)
     {
-        const auto sqlQuery = QString("INSERT INTO car_accessories (id_car, id_accessories) VALUES (:id, :accessories)");
-        addQuery.prepare(sqlQuery);
-        addQuery.bindValue(":id", id);
-        addQuery.bindValue(":accessories", id_element);
-        bool addQueryResult = wraper->execQuery(addQuery);
+        auto map = element.toMap();
+        const auto sqlQuery = QString("UPDATE car_accessories SET status=:status, date_update=now(), comment=:comment "
+                                      "WHERE id_car = :id AND id_accessory=:id_accessory");
+        updateQuery.prepare(sqlQuery);
+        updateQuery.bindValue(":id", id);
+        updateQuery.bindValue(":status", map["status"]);
+        updateQuery.bindValue(":comment", map["comment"]);
+        updateQuery.bindValue(":id_accessory", map["id_accessory"]);
+        bool addQueryResult = wraper->execQuery(updateQuery);
 
         if (!addQueryResult)
         {
             sendError("error insert car_accessories", "error", signature());
+            qDebug() << "[ERROR]" << updateQuery.lastError();
             return QSharedPointer<network::Response>();
         }
     }

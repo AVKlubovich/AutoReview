@@ -20,14 +20,14 @@ QSharedPointer<network::Response> GetCarAccessories::exec()
     auto& response = _context._responce;
     response->setHeaders(_context._packet.headers());
     const auto& incomingData = _context._packet.body().toMap();
-    auto uData = incomingData.value("body").toMap();
+    auto mapData = incomingData.value("body").toMap();
 
-    const auto id = uData["id_car"].toString();
+    const auto id = mapData["id_car"].toString();
     const auto wraper = database::DBManager::instance().getDBWraper();
     auto addQuery = wraper->query();
 
     const auto& sqlQuery = QString(
-        "SELECT id_accessory AS id, status "
+        "SELECT id_accessory AS id, status, comment, date_update "
         "FROM car_accessories "
         "WHERE id_car=:id");
     addQuery.prepare(sqlQuery);
