@@ -49,3 +49,4 @@ config.in
 #Ignore fastcgi
 Debug
 Release
+web/commands/addPos.php

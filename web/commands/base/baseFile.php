@@ -21,15 +21,6 @@ class BaseFile extends BaseCommand
         }
     }
 
-    protected function removeFile($folder, $fileInfo)
-    {
-        $fileName = substr($fileInfo, strrpos($fileInfo, $folder));
-        if (is_file($fileName))
-            return unlink($fileName);
-        else
-            return false;
-    }
-
     public function exec(&$assoc)
     {
     }
