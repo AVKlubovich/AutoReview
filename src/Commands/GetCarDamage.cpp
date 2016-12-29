@@ -63,7 +63,7 @@ QVariantList GetCarDamage::listDamages(const QVariantList &list)
 {
     QVariantList listResult;
 
-    for (auto item : list)
+    for (const auto& item : list)
     {
         auto map = item.toMap();
         const auto wraper = database::DBManager::instance().getDBWraper();
