@@ -65,7 +65,7 @@ class Query
     
     function getCommand($type_command)
     {
-        if (Commands::ADD_FILE == $type_command)
+        if (Commands::ADD_DAMAGE == $type_command)
             return new AddDamage();
         else
             return NULL;
