@@ -37,7 +37,7 @@ QSharedPointer<network::Response> GetStartingData::exec()
     mapTableComplaints["car_elements"] = "SELECT "
                                          "elements_of_cars.id, elements_of_cars.element, damage_from_elements.id_damage "
                                          "FROM elements_of_cars "
-                                         "INNER JOIN damage_from_elements "
+                                         "LEFT JOIN damage_from_elements "
                                          "ON (elements_of_cars.id = damage_from_elements.id_element)";
 
 
