@@ -7,29 +7,12 @@ class AddDamage extends BaseFile
         $url_files = "http://$_SERVER[SERVER_ADDR]/".Config::TARGET_DIR_FILES;
 
         $is_send_file = false;
-        foreach ($_FILES as $key=>$file)
-        {
-            if ($key == "file" &&
-                !empty($file["size"]))
-            {
-                $is_send_file = true;
-                break;
-            }
-        }
-        
-        echo'<pre>';print_r($_FILES); echo'</pre>';die;
+        if (!empty($_FILES))
+            $is_send_file = true;
 
-        if (
-        #!$is_send_file ||
+        if (!$is_send_file ||
             !array_key_exists('id_car', $assoc))
         {
-            echo'<pre>';
-            var_dump($assoc);
-            #print_r($assoc);
-            #print_r(json_decode(urldecode($_POST["json"]), true));
-	    print_r($_POST["json"]);
-	    echo'</pre>';die;
-	    
             Utils::printData(
                 array('status' => Errors::NOT_SEND_FIELD,
                     'error' => Errors::instance()->data(Errors::NOT_SEND_FIELD),
@@ -46,23 +29,37 @@ class AddDamage extends BaseFile
                     'field' => "id_car"));
         }
 
-        $images = array();
-        $file_url;
-        $orig_file_name;
-        foreach ($_FILES as $name=>$file)
+        foreach ($assoc["damages"] as $key => &$valueDamage)
         {
-            if (strpos($name, "file") != 0 ||
-                empty($file["size"]))
-                continue;
-            $orig_file_name = $file["name"];
-            $file_name = $this->saveFile(Config::TARGET_DIR_FILES, $file);
-            $file_url = "$url_files$file_name";
+            $idElement = $valueDamage["id_element"];
+            $idDamage = $valueDamage["id_damage"];
+            $photos = &$valueDamage["photos"];
 
-            array_push($images, $file);
-            //echo "<p><a href=\"$url_files$file_name\">$url_files$file_name</a></p>";
+            $urls = array();
+            foreach ($photos as $photoName)
+            {
+                foreach ($_FILES as $fileName => $file)
+                {
+                    if ($fileName == $photoName)
+                    {
+                        echo'<pre>';print_r($fileName); echo'</pre>';
+                        echo'<pre>';print_r($file); echo'</pre>';
+
+                        $savedFileName = $this->saveFile(Config::TARGET_DIR_FILES, $file);
+                        $fileUrl = "$url_files$savedFileName";
+                        array_push($urls, $fileUrl);
+//                        echo'<pre>';print_r($fileUrl); echo'</pre>';
+                    }
+//                    echo'<pre>';print_r($file); echo'</pre>';die;
+                }
+//                echo'<pre>';print_r($photoName); echo'</pre>';die;
+            }
+
+            $valueDamage["photos"] = $urls;
         }
 
-        $assoc["images"] = $images;
+//        echo'<pre>';print_r($assoc); echo'</pre>';die;
+
         $assoc["status"] = 1;
         $assoc["type_command"] = "save_damage_car";
 
