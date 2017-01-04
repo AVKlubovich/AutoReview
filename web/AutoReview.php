@@ -18,7 +18,6 @@ require_once 'dbManager.php';
 require_once 'commands.php';
 
 require_once './commands/base/baseCommand.php';
-require_once './commands/base/basePhotos.php';
 require_once './commands/base/baseFile.php';
 
 require_once './commands/addDamage.php';
@@ -66,7 +65,7 @@ class Query
     
     function getCommand($type_command)
     {
-        if (Commands::ADD_FILE == $type_command)
+        if (Commands::ADD_DAMAGE == $type_command)
             return new AddDamage();
         else
             return NULL;
