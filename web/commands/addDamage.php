@@ -28,34 +28,49 @@ class AddDamage extends BaseFile
                     'error' => Errors::instance()->data(Errors::NOT_SEND_FIELD),
                     'field' => "id_car"));
         }
+        
+        //echo'<pre>';print_r($_FILES); echo'</pre>';
+        //echo'<pre>';print_r($assoc); echo'</pre>';die;
 
         foreach ($assoc["damages"] as $key => &$valueDamage)
         {
             $idElement = $valueDamage["id_element"];
             $idDamage = $valueDamage["id_damage"];
             $photos = &$valueDamage["photos"];
+            
+            echo'<pre>';print_r($photos); echo'</pre>';
 
             $urls = array();
             foreach ($photos as $photoName)
             {
-                foreach ($_FILES as $fileName => $file)
+                $fileIsFinded = false;
+                foreach ($_FILES as $fileArrName => $file)
                 {
+                    $fileName = $file["name"];
+                    
                     if ($fileName == $photoName)
                     {
-                        echo'<pre>';print_r($fileName); echo'</pre>';
-                        echo'<pre>';print_r($file); echo'</pre>';
-
                         $savedFileName = $this->saveFile(Config::TARGET_DIR_FILES, $file);
                         $fileUrl = "$url_files$savedFileName";
                         array_push($urls, $fileUrl);
-//                        echo'<pre>';print_r($fileUrl); echo'</pre>';
+                        
+                        $fileIsFinded = true;
+                        continue;
                     }
-//                    echo'<pre>';print_r($file); echo'</pre>';die;
                 }
-//                echo'<pre>';print_r($photoName); echo'</pre>';die;
+                if ($fileIsFinded == false)
+                {
+                    Utils::printData(
+                        array('status' => Errors::NOT_SEND_SET_PHOTOS,
+                              'error' => Errors::instance()->data(Errors::NOT_SEND_SET_PHOTOS)
+                              )
+                    );
+                }
             }
 
-            $valueDamage["photos"] = $urls;
+//            $valueDamage["photos"] = $urls;
+            $valueDamage["urls"] = $urls;
+            
         }
 
 //        echo'<pre>';print_r($assoc); echo'</pre>';die;
