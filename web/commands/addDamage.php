@@ -18,22 +18,22 @@ class AddDamage extends BaseFile
         }
 
         if (!$is_send_file ||
-            !array_key_exists('id_complaint', $assoc))
+            !array_key_exists('id_car', $assoc))
         {
             Utils::printData(
                 array('status' => Errors::NOT_SEND_FIELD,
                     'error' => Errors::instance()->data(Errors::NOT_SEND_FIELD),
-                    'field' => "id_complaint",
+                    'field' => "id_car",
                     'is_send_file' => $is_send_file));
         }
 
-        $idComplaint = $assoc["id_complaint"];
-        if (count($idComplaint) <= 0)
+        $idCar = $assoc["id_car"];
+        if (count($idCar) <= 0)
         {
             Utils::printData(
                 array('status' => Errors::NOT_SEND_FIELD,
                     'error' => Errors::instance()->data(Errors::NOT_SEND_FIELD),
-                    'field' => "id_complaint"));
+                    'field' => "id_car"));
         }
 
         $images = array();
