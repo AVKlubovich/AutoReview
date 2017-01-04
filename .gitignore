@@ -50,3 +50,4 @@ config.in
 Debug
 Release
 web/commands/addPos.php
+web/.idea/workspace.xml
