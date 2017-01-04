@@ -7,19 +7,29 @@ class AddDamage extends BaseFile
         $url_files = "http://$_SERVER[SERVER_ADDR]/".Config::TARGET_DIR_FILES;
 
         $is_send_file = false;
-        foreach ($_FILES as $name=>$file)
+        foreach ($_FILES as $key=>$file)
         {
-            if ($name == "file" &&
+            if ($key == "file" &&
                 !empty($file["size"]))
             {
                 $is_send_file = true;
                 break;
             }
         }
+        
+        echo'<pre>';print_r($_FILES); echo'</pre>';die;
 
-        if (!$is_send_file ||
+        if (
+        #!$is_send_file ||
             !array_key_exists('id_car', $assoc))
         {
+            echo'<pre>';
+            var_dump($assoc);
+            #print_r($assoc);
+            #print_r(json_decode(urldecode($_POST["json"]), true));
+	    print_r($_POST["json"]);
+	    echo'</pre>';die;
+	    
             Utils::printData(
                 array('status' => Errors::NOT_SEND_FIELD,
                     'error' => Errors::instance()->data(Errors::NOT_SEND_FIELD),
