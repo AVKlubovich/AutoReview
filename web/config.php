@@ -2,7 +2,7 @@
 
 class Config
 {
-    const TARGET_DIR_FILES = "auto_review/files/";
+    const TARGET_DIR_FILES = "files/";
     
     const HOST_DB = "192.168.202.214";
     const PORT_DB = 5432;

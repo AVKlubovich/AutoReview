@@ -49,4 +49,8 @@ config.in
 #Ignore fastcgi
 Debug
 Release
+
+#Other files
 web/commands/addPos.php
+workspace.xml
+.idea
