@@ -20,46 +20,53 @@ QSharedPointer<network::Response> SaveDamageCar::exec()
     auto& response = _context._responce;
     response->setHeaders(_context._packet.headers());
     auto incomingData = _context._packet.body().toMap();
-    auto mapData = incomingData.value("body").toMap();
 
-    const auto id = mapData["id_car"].toLongLong();
-    const auto id_element_damage = mapData["id_element"].toInt();
-    const auto type_damage = mapData["id_damage"].toInt();
-    const auto comment = mapData["comment"].toString();
-    auto listUrlsPhoto = mapData["urls"].toList();
+    const auto id = incomingData["id_car"].toInt();
+    const auto damages = incomingData["damages"].toList();
 
     const auto wraper = database::DBManager::instance().getDBWraper();
     auto addQuery = wraper->query();
 
-    const auto sqlQuery = QString("INSERT INTO car_damage (id_car, id_element_damage, type_damage, comment, date_create)"
-                                  "VALUES (:id, :id_element_damage, :type_damage, :comment, now()) RETURNING id");
-    addQuery.prepare(sqlQuery);
-    addQuery.bindValue(":id", id);
-    addQuery.bindValue(":id_element_damage", id_element_damage);
-    addQuery.bindValue(":type_damage", type_damage);
-    addQuery.bindValue(":comment", comment);
-    bool addPhotosQueryResult = wraper->execQuery(addQuery);
-
-    if (!addPhotosQueryResult)
+    for (const auto damage : damages)
     {
-        sendError("error insert car_damage", "error", signature());
-        qDebug() << "[ERROR]" << addQuery.lastError();
-        return QSharedPointer<network::Response>();
-    }
-    const auto idCarDamage = addQuery.value("id").toLongLong();
+        const auto mapDamage = damage.toMap();
+        const auto id_element_damage = mapDamage["id_element"].toInt();
+        const auto type_damage = mapDamage["id_damage"].toInt();
+        const auto comment = mapDamage["comment"].toString();
+        const auto listUrlsPhoto = mapDamage["urls"].toList();
 
-    for (const auto &url : listUrlsPhoto)
-    {
-        const auto sqlQuery = QString("INSERT INTO photos (id_car_damage, url) VALUES (:id, :url)");
+        const auto sqlQuery = QString("INSERT INTO car_damage (id_car, id_element_damage, type_damage, comment, date_create)"
+                                      "VALUES (:id, :id_element_damage, :type_damage, :comment, now()) RETURNING id");
         addQuery.prepare(sqlQuery);
-        addQuery.bindValue(":id", idCarDamage);
-        addQuery.bindValue(":url", url.toString());
+        addQuery.bindValue(":id", id);
+        addQuery.bindValue(":id_element_damage", id_element_damage);
+        addQuery.bindValue(":type_damage", type_damage);
+        addQuery.bindValue(":comment", comment);
         bool addPhotosQueryResult = wraper->execQuery(addQuery);
 
         if (!addPhotosQueryResult)
         {
-            sendError("error insert photos", "error", signature());
+            sendError("error insert car_damage", "error", signature());
+            qDebug() << "[ERROR]" << addQuery.lastError();
             return QSharedPointer<network::Response>();
+        }
+
+        addQuery.first();
+        const auto idCarDamage = addQuery.value("id").toLongLong();
+
+        for (const auto &url : listUrlsPhoto)
+        {
+            const auto sqlQuery = QString("INSERT INTO photos (id_car_damage, url) VALUES (:id, :url)");
+            addQuery.prepare(sqlQuery);
+            addQuery.bindValue(":id", idCarDamage);
+            addQuery.bindValue(":url", url.toString());
+            bool addPhotosQueryResult = wraper->execQuery(addQuery);
+
+            if (!addPhotosQueryResult)
+            {
+                sendError("error insert photos", "error", signature());
+                return QSharedPointer<network::Response>();
+            }
         }
     }
 
