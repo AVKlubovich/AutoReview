@@ -1,6 +1,9 @@
 #include "Common.h"
 #include "GetCarAccessories.h"
 
+#include "server-core/Commands/CommandFactory.h"
+#include "server-core/Responce/Responce.h"
+
 #include "database/DBHelpers.h"
 #include "database/DBManager.h"
 #include "database/DBWraper.h"
