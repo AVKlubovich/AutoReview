@@ -7,10 +7,6 @@
 #include "web-exchange/WebRequestManager.h"
 #include "web-exchange/WebRequest.h"
 
-#include "database/DBHelpers.h"
-#include "database/DBManager.h"
-#include "database/DBWraper.h"
-
 RegisterCommand(auto_review::GetReleasedCarNumber, "get_released_car_numbers")
 
 
@@ -21,13 +17,13 @@ GetReleasedCarNumber::GetReleasedCarNumber(const Context& newContext)
 {
 }
 
-QSharedPointer<network::Response> GetReleasedCarNumber::exec()
+network::ResponseShp GetReleasedCarNumber::exec()
 {
     auto& response = _context._responce;
     response->setHeaders(_context._packet.headers());
 
-    auto incomingData = _context._packet.body().toMap();
-    auto bodyData = incomingData.value("body").toMap();
+    const auto& incomingData = _context._packet.body().toMap();
+    const auto& bodyData = incomingData.value("body").toMap();
 
     const auto parkId = bodyData["id_park"].toInt();
 
@@ -45,11 +41,11 @@ QSharedPointer<network::Response> GetReleasedCarNumber::exec()
 
     webManager->sendRequestCurrentThread(webRequest);
 
-    const auto data = webRequest->reply();
+    const auto& data = webRequest->reply();
     webRequest->release();
 
-    const auto doc = QJsonDocument::fromJson(data);
-    auto jobj = doc.object();
+    const auto& doc = QJsonDocument::fromJson(data);
+    const auto& jobj = doc.object();
     const auto& map = jobj.toVariantMap();
 
     if (!map.contains("status"))
@@ -70,24 +66,24 @@ QSharedPointer<network::Response> GetReleasedCarNumber::exec()
     QVariantList numbersList;
     for (const auto& value : array)
     {
-        QVariantMap valueMap = value.toMap();
+        const auto& valueMap = value.toMap();
         QVariantMap numberMap;
         numberMap.insert("id", valueMap["id"].toInt());
         numberMap.insert("number", valueMap["number"].toString());
         numbersList << QVariant::fromValue(numberMap);
     }
 
-    QVariantMap result;
-
     QVariantMap head;
     head["type"] = signature();
-    result["head"] = QVariant::fromValue(head);
 
     QVariantMap body;
     body["status"] = 1;
     body["cars"] = numbersList;
+
+    QVariantMap result;
+    result["head"] = QVariant::fromValue(head);
     result["body"] = QVariant::fromValue(body);
     _context._responce->setBody(QVariant::fromValue(result));
 
-    return QSharedPointer<network::Response>();
+    return network::ResponseShp();
 }

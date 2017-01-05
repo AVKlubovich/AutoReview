@@ -8,8 +8,6 @@
 #include "database/DBWraper.h"
 #include "database/DBHelpers.h"
 
-#include "network-core/Packet/JsonConverter.h"
-
 RegisterCommand(auto_review::GetStartingData, "get_server_data")
 
 
@@ -20,16 +18,14 @@ GetStartingData::GetStartingData(const Context& newContext)
 {
 }
 
-QSharedPointer<network::Response> GetStartingData::exec()
+network::ResponseShp GetStartingData::exec()
 {
     qDebug() << __FUNCTION__ << "was runned" << QDateTime::currentDateTime() << endl;
 
-    auto & responce = _context._responce;
+    auto& responce = _context._responce;
     responce->setHeaders(_context._packet.headers());
 
     QMap<QString, QString> mapTableComplaints;
-
-    // complaints_schema
     mapTableComplaints["accessories"]  = "SELECT * FROM accessories";
     mapTableComplaints["damage"]       = "SELECT * FROM type_damage_cars";
     mapTableComplaints["tires"]        = "SELECT * FROM tires_type";
@@ -56,10 +52,10 @@ QSharedPointer<network::Response> GetStartingData::exec()
         {
             sendError(selectQuery.lastError().text(), "error", signature());
             qDebug() << selectQuery.lastError().text();
-            return QSharedPointer<network::Response>();
+            return network::ResponseShp();
         }
 
-        const auto resultList = database::DBHelpers::queryToVariant(selectQuery);
+        const auto& resultList = database::DBHelpers::queryToVariant(selectQuery);
         if (iteratorMapTableComplaints.key() != "car_elements")
             resultMap[iteratorMapTableComplaints.key()] = QVariant::fromValue(resultList);
         else
@@ -68,6 +64,7 @@ QSharedPointer<network::Response> GetStartingData::exec()
 
     resultMap["type_command"] = signature();
     resultMap["status"] = 1;
+
     QVariantMap head;
     head["type"] = signature();
 
@@ -77,41 +74,41 @@ QSharedPointer<network::Response> GetStartingData::exec()
 
     responce->setBody(QVariant::fromValue(result));
 
-    return QSharedPointer<network::Response>();
+    return network::ResponseShp();
 }
 
 QVariantList GetStartingData::listOfPossibleDamages(const QList<QVariant> &list)
 {
     QVariantMap mapObjectResult;
-    QVariantList listResult;
 
-    for (auto item : list)
+    for (const auto& item : list)
     {
-        auto mapItem = item.toMap();
-        const auto id_element = mapItem.value("id").toString();
+        const auto& mapItem = item.toMap();
+        const auto elementId = mapItem.value("id").toString();
         const auto element = mapItem.value("element");
-        const auto id_damage = mapItem.value("id_damage");
+        const auto damageId = mapItem.value("id_damage");
         const QString damage = "damage";
 
-        if (!mapObjectResult.contains(id_element))
+        if (!mapObjectResult.contains(elementId))
         {
             QVariantMap mapObject;
-            mapObject["id"] = id_element;
+            mapObject["id"] = elementId;
             mapObject["element"] = element;
             mapObject[damage] = QVariant();
 
-            mapObjectResult[id_element] = mapObject;
+            mapObjectResult[elementId] = mapObject;
         }
 
-        auto mapObject = mapObjectResult[id_element].toMap();
+        auto mapObject = mapObjectResult[elementId].toMap();
 
         auto list = mapObject[damage].toList();
-        list.append(id_damage);
+        list.append(damageId);
 
         mapObject[damage] = list;
-        mapObjectResult[id_element] = mapObject;
+        mapObjectResult[elementId] = mapObject;
     }
 
+    QVariantList listResult;
     for (auto element = mapObjectResult.begin(); element != mapObjectResult.end(); ++element)
         listResult.append(element.value());
 

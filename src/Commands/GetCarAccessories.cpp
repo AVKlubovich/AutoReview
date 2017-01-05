@@ -15,14 +15,16 @@ GetCarAccessories::GetCarAccessories(const Context& newContext)
 {
 }
 
-QSharedPointer<network::Response> GetCarAccessories::exec()
+network::ResponseShp GetCarAccessories::exec()
 {
     auto& response = _context._responce;
     response->setHeaders(_context._packet.headers());
-    const auto& incomingData = _context._packet.body().toMap();
-    auto mapData = incomingData.value("body").toMap();
 
-    const auto id = mapData["id_car"].toString();
+    const auto& incomingData = _context._packet.body().toMap();
+    const auto& mapData = incomingData.value("body").toMap();
+
+    const auto& id = mapData["id_car"].toString();
+
     const auto wraper = database::DBManager::instance().getDBWraper();
     auto addQuery = wraper->query();
 
@@ -37,21 +39,23 @@ QSharedPointer<network::Response> GetCarAccessories::exec()
     if (!addCarQueryResult)
     {
         sendError("error select car_accessories", "error", signature());
+        qDebug() << addQuery.lastError().text();
         return network::ResponseShp();
     }
-    const auto listAccessories = database::DBHelpers::queryToVariant(addQuery);
 
+    const auto& listAccessories = database::DBHelpers::queryToVariant(addQuery);
+
+    QVariantMap head;
+    head["type"] = signature();
 
     QVariantMap body;
-    QVariantMap head;
-    QVariantMap result;
-    head["type"] = signature();
     body["status"] = 1;
     body["accessories"] = listAccessories;
 
+    QVariantMap result;
     result["head"] = QVariant::fromValue(head);
     result["body"] = QVariant::fromValue(body);
     _context._responce->setBody(QVariant::fromValue(result));
 
-    return QSharedPointer<network::Response>();
+    return network::ResponseShp();
 }

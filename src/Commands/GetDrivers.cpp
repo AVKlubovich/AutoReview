@@ -1,5 +1,5 @@
 #include "Common.h"
-#include "GetAcceptedCarNumbers.h"
+#include "GetDrivers.h"
 
 #include "server-core/Commands/CommandFactory.h"
 #include "server-core/Responce/Responce.h"
@@ -7,17 +7,17 @@
 #include "web-exchange/WebRequestManager.h"
 #include "web-exchange/WebRequest.h"
 
-RegisterCommand(auto_review::GetAcceptedCarNumbers, "get_accepted_car_numbers")
+RegisterCommand(auto_review::GetDrivers, "get_drivers")
 
 
 using namespace auto_review;
 
-GetAcceptedCarNumbers::GetAcceptedCarNumbers(const Context& newContext)
+GetDrivers::GetDrivers(const Context& newContext)
     : Command(newContext)
 {
 }
 
-network::ResponseShp GetAcceptedCarNumbers::exec()
+network::ResponseShp GetDrivers::exec()
 {
     auto& response = _context._responce;
     response->setHeaders(_context._packet.headers());
@@ -31,10 +31,10 @@ network::ResponseShp GetAcceptedCarNumbers::exec()
     auto webRequest = network::WebRequestShp::create("type_query");
 
     QVariantMap userData;
-    userData["type_query"] = "get_autos_data";
+    userData["type_query"] = "get_drivers_data";
+    userData["user_login"] = bodyData.value("login").toString();
+    userData["our"] = "0";
     userData["park"] = QString::number(parkId);
-    userData["our"] = QString::number(0);
-    userData["user_login"] = bodyData.value("login");
     userData["user_pass"] = QString(QCryptographicHash::hash(bodyData.value("password").toString().toStdString().data(), QCryptographicHash::Md5).toHex());
     webRequest->setArguments(userData);
     webRequest->setCallback(nullptr);
@@ -59,26 +59,18 @@ network::ResponseShp GetAcceptedCarNumbers::exec()
     if (status < 0)
     {
         sendError("Bad response from remote server", "remove_server_error", signature());
+        qDebug() << __FUNCTION__ << map["err"].toString();
         return network::ResponseShp();
     }
 
-    const auto& array = map["array"].toList();
-    QVariantList numbersList;
-    for (const auto& value : array)
-    {
-        const QVariantMap& valueMap = value.toMap();
-        QVariantMap numberMap;
-        numberMap.insert("id", valueMap["id"].toInt());
-        numberMap.insert("number", valueMap["number"].toString());
-        numbersList << QVariant::fromValue(numberMap);
-    }
+    const auto& driversArray = map["array"].toList();
 
     QVariantMap head;
     head["type"] = signature();
 
     QVariantMap body;
     body["status"] = 1;
-    body["cars"] = numbersList;
+    body["drivers"] = QVariant::fromValue(driversArray);
 
     QVariantMap result;
     result["head"] = QVariant::fromValue(head);

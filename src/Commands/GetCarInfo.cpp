@@ -17,13 +17,13 @@ GetCarInfo::GetCarInfo(const Context& newContext)
 {
 }
 
-QSharedPointer<network::Response> GetCarInfo::exec()
+network::ResponseShp GetCarInfo::exec()
 {
     auto& response = _context._responce;
     response->setHeaders(_context._packet.headers());
 
-    auto incomingData = _context._packet.body().toMap();
-    auto bodyData = incomingData.value("body").toMap();
+    const auto& incomingData = _context._packet.body().toMap();
+    const auto& bodyData = incomingData.value("body").toMap();
 
     const auto autoId = bodyData["id_car"].toInt();
 
@@ -40,11 +40,11 @@ QSharedPointer<network::Response> GetCarInfo::exec()
 
     webManager->sendRequestCurrentThread(webRequest);
 
-    const auto data = webRequest->reply();
+    const auto& data = webRequest->reply();
     webRequest->release();
 
-    const auto doc = QJsonDocument::fromJson(data);
-    auto jobj = doc.object();
+    const auto& doc = QJsonDocument::fromJson(data);
+    const auto& jobj = doc.object();
     const auto& map = jobj.toVariantMap();
 
     if (!map.contains("status"))
@@ -64,15 +64,15 @@ QSharedPointer<network::Response> GetCarInfo::exec()
     const auto& array = map["array"].toList();
     const auto& infoMap = array.first().toMap();
 
-    QVariantMap result;
-
     QVariantMap head;
     head["type"] = signature();
-    result["head"] = QVariant::fromValue(head);
 
     QVariantMap body;
     body["status"] = 1;
     body["info"] = QVariant::fromValue(infoMap);
+
+    QVariantMap result;
+    result["head"] = QVariant::fromValue(head);
     result["body"] = QVariant::fromValue(body);
     _context._responce->setBody(QVariant::fromValue(result));
 

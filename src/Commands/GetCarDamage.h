@@ -1,8 +1,8 @@
 #pragma once
 
-
 #include "server-core/Commands/CommandFactory.h"
 #include "server-core/Responce/Responce.h"
+
 
 namespace auto_review
 {
@@ -17,7 +17,7 @@ namespace auto_review
         GetCarDamage(const Context& newContext);
 
     public:
-        QSharedPointer<network::Response> exec() override;
+        network::ResponseShp exec() override;
 
     private:
         QVariantList listDamages(const QVariantList &list);

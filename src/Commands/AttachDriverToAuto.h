@@ -7,14 +7,14 @@ namespace auto_review
 {
 
     // NOTE: пересменка
-    class GetCarInfo :
+    class AttachDriverToAuto :
             public core::Command,
-            public core::CommandCreator<GetCarInfo>
+            public core::CommandCreator<AttachDriverToAuto>
     {
-        friend class QSharedPointer<GetCarInfo>;
+        friend class QSharedPointer<AttachDriverToAuto>;
 
     private:
-        GetCarInfo(const Context& newContext);
+        AttachDriverToAuto(const Context& newContext);
 
     public:
         network::ResponseShp exec() override;
