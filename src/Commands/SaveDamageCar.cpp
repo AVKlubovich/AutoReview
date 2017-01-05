@@ -21,7 +21,7 @@ QSharedPointer<network::Response> SaveDamageCar::exec()
     response->setHeaders(_context._packet.headers());
     const auto &incomingData = _context._packet.body().toMap();
 
-    const auto &id = incomingData["id_car"].toInt();
+    const auto id = incomingData["id_car"].toInt();
     const auto &damages = incomingData["damages"].toList();
 
     const auto wraper = database::DBManager::instance().getDBWraper();
@@ -30,8 +30,8 @@ QSharedPointer<network::Response> SaveDamageCar::exec()
     for (const auto damage : damages)
     {
         const auto &mapDamage = damage.toMap();
-        const auto &id_element_damage = mapDamage["id_element"].toInt();
-        const auto &type_damage = mapDamage["id_damage"].toInt();
+        const auto id_element_damage = mapDamage["id_element"].toInt();
+        const auto type_damage = mapDamage["id_damage"].toInt();
         const auto &comment = mapDamage["comment"].toString();
         const auto &listUrlsPhoto = mapDamage["urls"].toList();
 
