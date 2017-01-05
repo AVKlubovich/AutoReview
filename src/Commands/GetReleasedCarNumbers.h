@@ -3,12 +3,6 @@
 #include "server-core/Commands/UserCommand.h"
 
 
-namespace network
-{
-    class WebRequest;
-    class WebRequestManager;
-}
-
 namespace auto_review
 {
 
@@ -23,7 +17,7 @@ namespace auto_review
         GetReleasedCarNumber(const Context& newContext);
 
     public:
-        QSharedPointer<network::Response> exec() override;
+        network::ResponseShp exec() override;
     };
 
 }

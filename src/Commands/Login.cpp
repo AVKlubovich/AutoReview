@@ -26,21 +26,22 @@ Login::Login(const Context& newContext)
 {
 }
 
-QSharedPointer<network::Response> Login::exec()
+network::ResponseShp Login::exec()
 {
     auto& response = _context._responce;
     response->setHeaders(_context._packet.headers());
-    auto webRequest = QSharedPointer<network::WebRequest>::create( "sub_qry" );
+
+    auto webRequest = network::WebRequestShp::create( "sub_qry" );
 
 
-    auto incomingData = _context._packet.body().toMap();
-    auto uData = incomingData.value("body").toMap();
+    const auto& incomingData = _context._packet.body().toMap();
+    const auto& uData = incomingData.value("body").toMap();
 
     if(!uData.contains("login") ||
        !uData.contains("password"))
     {
         setError(ERROR_LOGIN_OR_PASSWORD);
-        QSharedPointer<network::Response>();
+        network::ResponseShp();
     }
 
     auto webManager = network::WebRequestManager::instance();
@@ -54,26 +55,25 @@ QSharedPointer<network::Response> Login::exec()
 
     webManager->sendRequestCurrentThread(webRequest);
 
-    const auto data = webRequest->reply();
+    const auto& data = webRequest->reply();
     webRequest->release();
 
-    const auto doc = QJsonDocument::fromJson(data);
-    auto jobj = doc.object();
-    const auto map = jobj.toVariantMap();
+    const auto& doc = QJsonDocument::fromJson(data);
+    const auto& jobj = doc.object();
+    const auto& map = jobj.toVariantMap();
 
     if (!map.contains("status"))
     {
-        // TODO: db_error
         setError(ERROR_LOGIN_OR_PASSWORD);
         qDebug() << __FUNCTION__ << "error: field not sended";
-        return QSharedPointer<network::Response>();
+        return network::ResponseShp();
     }
 
     const auto status = map.value("status").toInt();
     if (status < 0)
     {
         setError(ERROR_LOGIN_OR_PASSWORD, 2);
-        return QSharedPointer<network::Response>();
+        return network::ResponseShp();
     }
 
     if (!map.contains("full_name") ||
@@ -81,7 +81,7 @@ QSharedPointer<network::Response> Login::exec()
     {
         setError(ERROR_LOGIN_OR_PASSWORD);
         qDebug() << __FUNCTION__ << "error: field not sended";
-        return QSharedPointer<network::Response>();
+        return network::ResponseShp();
     }
 
     bool basicRight = false;
@@ -109,10 +109,10 @@ QSharedPointer<network::Response> Login::exec()
     if (!basicRight || !parkRight || idPark == -1)
     {
         sendError(QObject::tr("Нет прав для работы в AutoReview"), "authotization_error", signature());
-        return QSharedPointer<network::Response>();
+        return network::ResponseShp();
     }
 
-    const auto insertUserQueryStr = QString(
+    const auto& insertUserQueryStr = QString(
         "WITH upsert AS (UPDATE public.users SET name=:name1 WHERE id = :id1 RETURNING *)"
         "INSERT INTO public.users (id, name) SELECT :id2, :name2 WHERE NOT EXISTS (SELECT * FROM upsert)"
         );
@@ -133,21 +133,25 @@ QSharedPointer<network::Response> Login::exec()
     {
         setError(ERROR_LOGIN_OR_PASSWORD);
         qDebug() << __FUNCTION__ << "error:" << qPrintable(insertUserQuery.lastError().text());
-        return QSharedPointer<network::Response>();
+        return network::ResponseShp();
     }
 
-    QVariantMap body, head, result;
+    QVariantMap head;
     head["type"] = signature();
+
+    QVariantMap body;
     body["status"] = 1;
     body["id_user"] = userId;
     body["full_name"] = fullName;
     body["id_park"] = idPark;
     body["park_name"] = parkName;
+
+    QVariantMap result;
     result["head"] = QVariant::fromValue(head);
     result["body"] = QVariant::fromValue(body);
     _context._responce->setBody(QVariant::fromValue(result));
 
-    return QSharedPointer<network::Response>();
+    return network::ResponseShp();
 }
 
 void Login::setError(const QString& err, const quint64 status)

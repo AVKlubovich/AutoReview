@@ -1,7 +1,6 @@
 #pragma once
 
-#include "server-core/Commands/CommandFactory.h"
-#include "server-core/Responce/Responce.h"
+#include "server-core/Commands/UserCommand.h"
 
 
 namespace auto_review
@@ -17,7 +16,7 @@ namespace auto_review
         SaveCarAccessories(const Context& newContext);
 
     public:
-        QSharedPointer<network::Response> exec() override;
+        network::ResponseShp exec() override;
     };
 
 }

@@ -8,8 +8,6 @@
 #include "database/DBWraper.h"
 #include "database/DBHelpers.h"
 
-#include "network-core/Packet/JsonConverter.h"
-
 RegisterCommand(auto_review::GetStartingData, "get_server_data")
 
 
@@ -20,16 +18,14 @@ GetStartingData::GetStartingData(const Context& newContext)
 {
 }
 
-QSharedPointer<network::Response> GetStartingData::exec()
+network::ResponseShp GetStartingData::exec()
 {
     qDebug() << __FUNCTION__ << "was runned" << QDateTime::currentDateTime() << endl;
 
-    auto & responce = _context._responce;
+    auto& responce = _context._responce;
     responce->setHeaders(_context._packet.headers());
 
     QMap<QString, QString> mapTableComplaints;
-
-    // complaints_schema
     mapTableComplaints["accessories"]   = "SELECT * FROM accessories";
     mapTableComplaints["damage"]        = "SELECT * FROM type_damage_cars";
     mapTableComplaints["tires"]         = "SELECT * FROM tires_type";
@@ -60,10 +56,10 @@ QSharedPointer<network::Response> GetStartingData::exec()
         {
             sendError(selectQuery.lastError().text(), "error", signature());
             qDebug() << selectQuery.lastError().text();
-            return QSharedPointer<network::Response>();
+            return network::ResponseShp();
         }
 
-        const auto resultList = database::DBHelpers::queryToVariant(selectQuery);
+        const auto& resultList = database::DBHelpers::queryToVariant(selectQuery);
 
         if (iteratorMapTableComplaints.key() == "car_elements")
         {
@@ -82,6 +78,7 @@ QSharedPointer<network::Response> GetStartingData::exec()
 
     resultMap["type_command"] = signature();
     resultMap["status"] = 1;
+
     QVariantMap head;
     head["type"] = signature();
 
@@ -91,44 +88,44 @@ QSharedPointer<network::Response> GetStartingData::exec()
 
     responce->setBody(QVariant::fromValue(result));
 
-    return QSharedPointer<network::Response>();
+    return network::ResponseShp();
 }
 
 QVariantList GetStartingData::listOfPossibleDamages(const QList<QVariant> &list)
 {
     QVariantMap mapObjectResult;
-    QVariantList listResult;
 
-    for (const auto &item : list)
+    for (const auto& item : list)
     {
-        auto mapItem = item.toMap();
-        const auto id_element = mapItem.value("id").toString();
+        const auto& mapItem = item.toMap();
+        const auto elementId = mapItem.value("id").toString();
         const auto element = mapItem.value("element");
         const auto id_damage = mapItem.value("id_damage").toInt();
         const auto& color = mapItem.value("color").toString();
         const QString damage = "damage";
 
-        if (!mapObjectResult.contains(id_element))
+        if (!mapObjectResult.contains(elementId))
         {
             QVariantMap mapObject;
-            mapObject["id"] = id_element;
+            mapObject["id"] = elementId;
             mapObject["element"] = element;
             mapObject["color"] = color;
             mapObject[damage] = QVariant();
 
-            mapObjectResult[id_element] = mapObject;
+            mapObjectResult[elementId] = mapObject;
         }
 
-        auto mapObject = mapObjectResult[id_element].toMap();
+        auto mapObject = mapObjectResult[elementId].toMap();
 
         auto list = mapObject[damage].toList();
         if (id_damage)
             list.append(id_damage);
 
         mapObject[damage] = list;
-        mapObjectResult[id_element] = mapObject;
+        mapObjectResult[elementId] = mapObject;
     }
 
+    QVariantList listResult;
     for (auto element = mapObjectResult.begin(); element != mapObjectResult.end(); ++element)
         listResult.append(element.value());
 
@@ -138,43 +135,43 @@ QVariantList GetStartingData::listOfPossibleDamages(const QList<QVariant> &list)
 QVariantList GetStartingData::listOfElementsCoordinates(const QList<QVariant> &list)
 {
     QVariantMap mapObjectResult;
-    QVariantList listResult;
 
     for (const auto &item : list)
     {
         const auto& mapItem = item.toMap();
-        const auto& id = mapItem.value("id").toString();
-        const auto& foreground_url = mapItem.value("foreground_url");
-        const auto& background_url = mapItem.value("background_url");
-        const auto id_car_element = mapItem.value("id_car_element");
-        const auto& axis_X = mapItem.value("axis_X");
-        const auto& axis_Y = mapItem.value("axis_Y");
+        const auto& urlId = mapItem.value("id").toString();
+        const auto& foregroundUrl = mapItem.value("foreground_url");
+        const auto& backgroundUrl = mapItem.value("background_url");
+        const auto idCarElement = mapItem.value("id_car_element");
+        const auto& axisX = mapItem.value("axis_X");
+        const auto& axisY = mapItem.value("axis_Y");
         const auto& coordinates = "car_details";
 
-        if (!mapObjectResult.contains(id))
+        if (!mapObjectResult.contains(urlId))
         {
             QVariantMap mapObject;
-            mapObject["id"] = id;
-            mapObject["foreground_url"] = foreground_url;
-            mapObject["background_url"] = background_url;
+            mapObject["id"] = urlId;
+            mapObject["foreground_url"] = foregroundUrl;
+            mapObject["background_url"] = backgroundUrl;
             mapObject[coordinates] = QVariant();
 
-            mapObjectResult[id] = mapObject;
+            mapObjectResult[urlId] = mapObject;
         }
 
-        auto mapObject = mapObjectResult[id].toMap();
+        auto mapObject = mapObjectResult[urlId].toMap();
         auto listCoordinates = mapObject[coordinates].toList();
 
         QVariantMap mapCoordinates;
-        mapCoordinates["id_car_element"] = id_car_element;
-        mapCoordinates["axis_X"] = axis_X;
-        mapCoordinates["axis_Y"] = axis_Y;
+        mapCoordinates["id_car_element"] = idCarElement;
+        mapCoordinates["axis_X"] = axisX;
+        mapCoordinates["axis_Y"] = axisY;
         listCoordinates.append(mapCoordinates);
 
         mapObject[coordinates] = listCoordinates;
-        mapObjectResult[id] = mapObject;
+        mapObjectResult[urlId] = mapObject;
     }
 
+    QVariantList listResult;
     for (auto element = mapObjectResult.begin(); element != mapObjectResult.end(); ++element)
         listResult.append(element.value());
 

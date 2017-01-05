@@ -5,8 +5,8 @@
 
 namespace network
 {
-    class WebRequest;
     class WebRequestManager;
+    typedef QSharedPointer<WebRequestManager> WebRequestManagerShp;
 }
 
 namespace auto_review
@@ -22,13 +22,13 @@ namespace auto_review
         Login(const Context& newContext);
 
     public:
-        QSharedPointer<network::Response> exec() override;
+        network::ResponseShp exec() override;
 
     private:
         void setError(const QString & err, const quint64 status = -1);
 
     private:
-        QSharedPointer<network::WebRequestManager> _webManager;
+        network::WebRequestManagerShp _webManager;
 
         const QString ERROR_LOGIN_OR_PASSWORD = "Неверный логин и/или пароль";
     };
