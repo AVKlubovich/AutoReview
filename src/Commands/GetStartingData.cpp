@@ -26,16 +26,20 @@ network::ResponseShp GetStartingData::exec()
     responce->setHeaders(_context._packet.headers());
 
     QMap<QString, QString> mapTableComplaints;
-    mapTableComplaints["accessories"]  = "SELECT * FROM accessories";
-    mapTableComplaints["damage"]       = "SELECT * FROM type_damage_cars";
-    mapTableComplaints["tires"]        = "SELECT * FROM tires_type";
-    mapTableComplaints["check_type"]   = "SELECT * FROM check_type";
-    mapTableComplaints["car_elements"] = "SELECT "
-                                         "elements_of_cars.id, elements_of_cars.element, elements_of_cars.color, damage_from_elements.id_damage "
-                                         "FROM elements_of_cars "
-                                         "LEFT JOIN damage_from_elements "
-                                         "ON (elements_of_cars.id = damage_from_elements.id_element)";
-
+    mapTableComplaints["accessories"]   = "SELECT * FROM accessories";
+    mapTableComplaints["damage"]        = "SELECT * FROM type_damage_cars";
+    mapTableComplaints["tires"]         = "SELECT * FROM tires_type";
+    mapTableComplaints["check_type"]    = "SELECT * FROM check_type";
+    mapTableComplaints["car_elements"]  = "SELECT "
+                                          "config_elements_of_cars.id, config_elements_of_cars.element, config_elements_of_cars.color, damage_from_elements.id_damage "
+                                          "FROM config_elements_of_cars "
+                                          "LEFT JOIN damage_from_elements "
+                                          "ON (config_elements_of_cars.id = damage_from_elements.id_element)";
+    mapTableComplaints["car_positions"] = "SELECT "
+                                          "pos.*, car_pos.id_car_element, car_pos.\"axis_X\", car_pos.\"axis_Y\" "
+                                          "FROM config_car_positions AS pos "
+                                          "INNER JOIN config_elements_for_car_positions AS car_pos "
+                                          "ON (pos.id = car_pos.id_car_position)";
 
     const auto wraper = database::DBManager::instance().getDBWraper();
     auto selectQuery = wraper->query();
@@ -56,10 +60,20 @@ network::ResponseShp GetStartingData::exec()
         }
 
         const auto& resultList = database::DBHelpers::queryToVariant(selectQuery);
-        if (iteratorMapTableComplaints.key() != "car_elements")
-            resultMap[iteratorMapTableComplaints.key()] = QVariant::fromValue(resultList);
-        else
+
+        if (iteratorMapTableComplaints.key() == "car_elements")
+        {
             resultMap[iteratorMapTableComplaints.key()] = listOfPossibleDamages(resultList);
+            continue;
+        }
+
+        if (iteratorMapTableComplaints.key() == "car_positions")
+        {
+            resultMap[iteratorMapTableComplaints.key()] = listOfElementsCoordinates(resultList);
+            continue;
+        }
+
+        resultMap[iteratorMapTableComplaints.key()] = QVariant::fromValue(resultList);
     }
 
     resultMap["type_command"] = signature();
@@ -86,7 +100,8 @@ QVariantList GetStartingData::listOfPossibleDamages(const QList<QVariant> &list)
         const auto& mapItem = item.toMap();
         const auto elementId = mapItem.value("id").toString();
         const auto element = mapItem.value("element");
-        const auto damageId = mapItem.value("id_damage");
+        const auto id_damage = mapItem.value("id_damage").toInt();
+        const auto& color = mapItem.value("color").toString();
         const QString damage = "damage";
 
         if (!mapObjectResult.contains(elementId))
@@ -94,6 +109,7 @@ QVariantList GetStartingData::listOfPossibleDamages(const QList<QVariant> &list)
             QVariantMap mapObject;
             mapObject["id"] = elementId;
             mapObject["element"] = element;
+            mapObject["color"] = color;
             mapObject[damage] = QVariant();
 
             mapObjectResult[elementId] = mapObject;
@@ -102,10 +118,57 @@ QVariantList GetStartingData::listOfPossibleDamages(const QList<QVariant> &list)
         auto mapObject = mapObjectResult[elementId].toMap();
 
         auto list = mapObject[damage].toList();
-        list.append(damageId);
+        if (id_damage)
+            list.append(id_damage);
 
         mapObject[damage] = list;
         mapObjectResult[elementId] = mapObject;
+    }
+
+    QVariantList listResult;
+    for (auto element = mapObjectResult.begin(); element != mapObjectResult.end(); ++element)
+        listResult.append(element.value());
+
+    return listResult;
+}
+
+QVariantList GetStartingData::listOfElementsCoordinates(const QList<QVariant> &list)
+{
+    QVariantMap mapObjectResult;
+
+    for (const auto &item : list)
+    {
+        const auto& mapItem = item.toMap();
+        const auto& urlId = mapItem.value("id").toString();
+        const auto& foregroundUrl = mapItem.value("foreground_url");
+        const auto& backgroundUrl = mapItem.value("background_url");
+        const auto idCarElement = mapItem.value("id_car_element");
+        const auto& axisX = mapItem.value("axis_X");
+        const auto& axisY = mapItem.value("axis_Y");
+        const auto& coordinates = "car_details";
+
+        if (!mapObjectResult.contains(urlId))
+        {
+            QVariantMap mapObject;
+            mapObject["id"] = urlId;
+            mapObject["foreground_url"] = foregroundUrl;
+            mapObject["background_url"] = backgroundUrl;
+            mapObject[coordinates] = QVariant();
+
+            mapObjectResult[urlId] = mapObject;
+        }
+
+        auto mapObject = mapObjectResult[urlId].toMap();
+        auto listCoordinates = mapObject[coordinates].toList();
+
+        QVariantMap mapCoordinates;
+        mapCoordinates["id_car_element"] = idCarElement;
+        mapCoordinates["axis_X"] = axisX;
+        mapCoordinates["axis_Y"] = axisY;
+        listCoordinates.append(mapCoordinates);
+
+        mapObject[coordinates] = listCoordinates;
+        mapObjectResult[urlId] = mapObject;
     }
 
     QVariantList listResult;
