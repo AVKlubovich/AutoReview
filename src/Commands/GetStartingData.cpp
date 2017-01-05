@@ -31,7 +31,7 @@ network::ResponseShp GetStartingData::exec()
     mapTableComplaints["tires"]        = "SELECT * FROM tires_type";
     mapTableComplaints["check_type"]   = "SELECT * FROM check_type";
     mapTableComplaints["car_elements"] = "SELECT "
-                                         "elements_of_cars.id, elements_of_cars.element, damage_from_elements.id_damage "
+                                         "elements_of_cars.id, elements_of_cars.element, elements_of_cars.color, damage_from_elements.id_damage "
                                          "FROM elements_of_cars "
                                          "LEFT JOIN damage_from_elements "
                                          "ON (elements_of_cars.id = damage_from_elements.id_element)";
