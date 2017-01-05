@@ -18,6 +18,7 @@ namespace auto_review
         QSharedPointer<network::Response> exec() override;
     private:
         QVariantList listOfPossibleDamages(const QList<QVariant> &list);
+        QVariantList listOfElementsCoordinates(const QList<QVariant> &list);
     };
 
 }
