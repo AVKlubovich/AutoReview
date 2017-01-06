@@ -110,7 +110,7 @@ void Core::done()
 bool Core::initLoger()
 {
     // TODO: http://134.17.26.128:8080/browse/OKK-125
-    //return true;
+    return true;
 
     auto settings = utils::SettingsFactory::instance().settings("server-core");
     settings.beginGroup("Log");

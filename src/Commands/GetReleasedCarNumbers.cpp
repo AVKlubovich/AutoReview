@@ -4,15 +4,8 @@
 #include "server-core/Commands/CommandFactory.h"
 #include "server-core/Responce/Responce.h"
 
-#include "network-core/RequestsManager/Users/ResponseLogin.h"
-#include "network-core/RequestsManager/Users/RequestLogin.h"
-
 #include "web-exchange/WebRequestManager.h"
 #include "web-exchange/WebRequest.h"
-
-#include "database/DBHelpers.h"
-#include "database/DBManager.h"
-#include "database/DBWraper.h"
 
 RegisterCommand(auto_review::GetReleasedCarNumber, "get_released_car_numbers")
 
@@ -24,61 +17,73 @@ GetReleasedCarNumber::GetReleasedCarNumber(const Context& newContext)
 {
 }
 
-QSharedPointer<network::Response> GetReleasedCarNumber::exec()
+network::ResponseShp GetReleasedCarNumber::exec()
 {
     auto& response = _context._responce;
     response->setHeaders(_context._packet.headers());
 
-    const auto& incomingData = _context._packet.body().toMap()["body"].toMap();
+    const auto& incomingData = _context._packet.body().toMap();
+    const auto& bodyData = incomingData.value("body").toMap();
 
-    if (!incomingData.contains("id_park"))
+    const auto parkId = bodyData["id_park"].toInt();
+
+    auto webManager = network::WebRequestManager::instance();
+    auto webRequest = network::WebRequestShp::create("type_query");
+
+    QVariantMap userData;
+    userData["type_query"] = "get_autos_data";
+    userData["park"] = QString::number(parkId);
+    userData["our"] = QString::number(0);
+    userData["user_login"] = bodyData.value("login");
+    userData["user_pass"] = QString(QCryptographicHash::hash(bodyData.value("password").toString().toStdString().data(), QCryptographicHash::Md5).toHex());
+    webRequest->setArguments(userData);
+    webRequest->setCallback(nullptr);
+
+    webManager->sendRequestCurrentThread(webRequest);
+
+    const auto& data = webRequest->reply();
+    webRequest->release();
+
+    const auto& doc = QJsonDocument::fromJson(data);
+    const auto& jobj = doc.object();
+    const auto& map = jobj.toVariantMap();
+
+    if (!map.contains("status"))
     {
-        sendError("", "incoming_data_error", signature());
+        sendError("Bad response from remote server", "remove_server_error", signature());
+        qDebug() << __FUNCTION__ << "error: field not sended";
         return network::ResponseShp();
     }
 
-    auto webManager = network::WebRequestManager::instance();
+    const auto status = map.value("status").toInt();
+    if (status < 0)
+    {
+        sendError("Bad response from remote server", "remove_server_error", signature());
+        return network::ResponseShp();
+    }
 
-//    QVariantMap userData;
-//    userData["sub_qry"] = "get_auto_review_rights";
-//    userData["user_login"] = uData.value("login");
-//    userData["user_pass"] = QString(QCryptographicHash::hash(uData.value("password").toString().toStdString().data(), QCryptographicHash::Md5).toHex());
-//    webRequest->setArguments(userData);
-//    webRequest->setCallback(nullptr);
+    const auto& array = map["array"].toList();
+    QVariantList numbersList;
+    for (const auto& value : array)
+    {
+        const auto& valueMap = value.toMap();
+        QVariantMap numberMap;
+        numberMap.insert("id", valueMap["id"].toInt());
+        numberMap.insert("number", valueMap["number"].toString());
+        numbersList << QVariant::fromValue(numberMap);
+    }
 
-//    webManager->sendRequestCurrentThread(webRequest);
-
-//    const auto data = webRequest->reply();
-//    webRequest->release();
-
-//    const auto doc = QJsonDocument::fromJson(data);
-//    auto jobj = doc.object();
-//    const auto map = jobj.toVariantMap();
-
-//    if(!map.contains("status"))
-//    {
-//        // TODO: db_error
-//        setError(ERROR_LOGIN_OR_PASSWORD);
-//        qDebug() << __FUNCTION__ << "error: field not sended";
-//        return QSharedPointer<network::Response>();
-//    }
+    QVariantMap head;
+    head["type"] = signature();
 
     QVariantMap body;
-    QVariantMap head;
-    QVariantMap result;
-
-    head["type"] = signature();
     body["status"] = 1;
+    body["cars"] = numbersList;
+
+    QVariantMap result;
     result["head"] = QVariant::fromValue(head);
-    QVariantList autoNumbers;
-    autoNumbers << QVariant::fromValue(QVariantMap() = {{"id", 0}, {"number", "к002ст23"}});
-    autoNumbers << QVariant::fromValue(QVariantMap() = {{"id", 1}, {"number", "в170ьь161"}});
-    autoNumbers << QVariant::fromValue(QVariantMap() = {{"id", 2}, {"number", "а853мр97"}});
-    autoNumbers << QVariant::fromValue(QVariantMap() = {{"id", 3}, {"number", "р070вк92"}});
-    autoNumbers << QVariant::fromValue(QVariantMap() = {{"id", 4}, {"number", "с065мк78"}});
-    body["cars"] = autoNumbers;
     result["body"] = QVariant::fromValue(body);
     _context._responce->setBody(QVariant::fromValue(result));
 
-    return QSharedPointer<network::Response>();
+    return network::ResponseShp();
 }

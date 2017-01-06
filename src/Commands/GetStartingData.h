@@ -12,10 +12,12 @@ namespace auto_review
     {
         friend class QSharedPointer<GetStartingData>;
 
+    private:
         GetStartingData(const Context& newContext);
+
     public:
-        ~GetStartingData() override = default;
-        QSharedPointer<network::Response> exec() override;
+        network::ResponseShp exec() override;
+
     private:
         QVariantList listOfPossibleDamages(const QList<QVariant> &list);
         QVariantList listOfElementsCoordinates(const QList<QVariant> &list);

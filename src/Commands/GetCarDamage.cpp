@@ -1,6 +1,9 @@
 #include "Common.h"
 #include "GetCarDamage.h"
 
+#include "server-core/Commands/CommandFactory.h"
+#include "server-core/Responce/Responce.h"
+
 #include "database/DBHelpers.h"
 #include "database/DBManager.h"
 #include "database/DBWraper.h"
@@ -15,45 +18,48 @@ GetCarDamage::GetCarDamage(const Context& newContext)
 {
 }
 
-QSharedPointer<network::Response> GetCarDamage::exec()
+network::ResponseShp GetCarDamage::exec()
 {
-    qDebug() << "get_car_damage";
     auto& response = _context._responce;
     response->setHeaders(_context._packet.headers());
-    auto incomingData = _context._packet.body().toMap();
-    auto mapData = incomingData.value("body").toMap();
 
-    const auto id = mapData["id_car"].toLongLong();
+    const auto& incomingData = _context._packet.body().toMap();
+    const auto& mapData = incomingData.value("body").toMap();
+
+    const auto autoId = mapData["id_car"].toLongLong();
+
     const auto wraper = database::DBManager::instance().getDBWraper();
     auto selectQuery = wraper->query();
 
-    const auto sqlQuery = QString("SELECT "
-                                  "id,"
-                                  "id_element_damage,"
-                                  "type_damage,"
-                                  "comment"
-                                  " FROM car_damage"
-                                  " WHERE id_car=:id"
-                                  " AND status=false");
+    const auto& sqlQuery = QString(
+        "SELECT "
+        "id, "
+        "id_element_damage, "
+        "type_damage, "
+        "comment "
+        "FROM car_damage"
+        "WHERE id_car = :id AND status = false");
     selectQuery.prepare(sqlQuery);
-    selectQuery.bindValue(":id", id);
+    selectQuery.bindValue(":id", autoId);
+
     bool addCarQueryResult = wraper->execQuery(selectQuery);
     if (!addCarQueryResult)
     {
-        sendError("error select car_damage", "error", signature());
-        qDebug() << "error select car_damage" << selectQuery.lastError();
+        sendError("error select car_damage", "db_error", signature());
+        qDebug() << "error select car_damage" << selectQuery.lastError().text();
         return QSharedPointer<network::Response>();
     }
 
-    const auto listCar = database::DBHelpers::queryToVariant(selectQuery);
+    const auto& listCar = database::DBHelpers::queryToVariant(selectQuery);
+
+    QVariantMap head;
+    head["type"] = signature();
 
     QVariantMap body;
-    QVariantMap head;
-    QVariantMap result;
-    head["type"] = signature();
     body["status"] = 1;
     body["damages"] = listDamages(listCar);
 
+    QVariantMap result;
     result["head"] = QVariant::fromValue(head);
     result["body"] = QVariant::fromValue(body);
     _context._responce->setBody(QVariant::fromValue(result));
@@ -68,27 +74,28 @@ QVariantList GetCarDamage::listDamages(const QVariantList &list)
     for (const auto& item : list)
     {
         auto map = item.toMap();
+
         const auto wraper = database::DBManager::instance().getDBWraper();
         auto selectQuery = wraper->query();
 
-        const int id_damage = map["id"].toInt();
-        const auto sqlQueryPhotos = QString("SELECT url"
-                                            " FROM photos"
-                                            " WHERE photos.id_car_damage=:id");
+        const int damageId = map["id"].toInt();
+        const auto& sqlQueryPhotos = QString(
+            "SELECT url "
+            "FROM photos "
+            "WHERE photos.id_car_damage = :damageId");
         selectQuery.prepare(sqlQueryPhotos);
-        selectQuery.bindValue(":id", id_damage);
+        selectQuery.bindValue(":damageId", damageId);
         bool addPhotosQueryResult = wraper->execQuery(selectQuery);
 
         QVariantList listPhotos;
         if (!addPhotosQueryResult)
-            listPhotos.append(QString("error select photos from id_car_damage = %1").arg(QString::number(id_damage)));
+            listPhotos.append(QString("error select photos from id_car_damage = %1").arg(QString::number(damageId)));
         else
             listPhotos = database::DBHelpers::queryToVariant(selectQuery);
 
-        QVariantMap mapObject = map;
-        mapObject["photos"] = listPhotos;
+        map["photos"] = listPhotos;
 
-        listResult.append(mapObject);
+        listResult.append(map);
     }
 
     return listResult;

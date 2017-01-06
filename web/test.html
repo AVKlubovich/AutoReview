@@ -6,16 +6,18 @@ and open the template in the editor.
 -->
 <html>
     <head>
-        <title>TODO supply a title</title>
+        <title>Check AutoReview.php</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
     <body>
-        <form action="QAT.php" method="post" enctype="multipart/form-data"> 
-        <p>type_command: <input type="text" name="type_command"></p>
-        <p>json: <input type="text" name="json"></p>
-        <p>File: <input type="file" name="file"></p>
-        <p><input type="submit" value="sendData"></p>
+        <form action="AutoReview.php" method="post" enctype="multipart/form-data">
+            <p>type_command: <input type="text" name="type_command"></p>
+            <p>json: <input type="text" name="json"></p>
+            <p>File 1: <input type="file" name="1_photo.jpg"></p>
+            <p>File 2: <input type="file" name="2_photo"></p>
+            <p>File 2: <input type="file" name="3_photo"></p>
+            <p><input type="submit" value="sendData"></p>
         </form>
     </body>
 </html>
