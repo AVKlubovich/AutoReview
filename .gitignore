@@ -54,3 +54,4 @@ Release
 web/commands/addPos.php
 workspace.xml
 .idea
+web/files
