@@ -21,6 +21,7 @@ namespace auto_review
     private:
         QVariantList listOfPossibleDamages(const QList<QVariant> &list);
         QVariantList listOfElementsCoordinates(const QList<QVariant> &list);
+        const QString &checkIpAddress(QString url);
     };
-
 }
+
