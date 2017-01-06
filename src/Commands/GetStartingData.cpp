@@ -24,8 +24,6 @@ network::ResponseShp GetStartingData::exec()
 
     auto& responce = _context._responce;
     responce->setHeaders(_context._packet.headers());
-    const auto &headers = _context._packet.headers().allHeaders();
-    remoteAddr = headers["REMOTE_ADDR"];
 
     QMap<QString, QString> mapTableComplaints;
     mapTableComplaints["accessories"]   = "SELECT * FROM accessories";
@@ -183,6 +181,9 @@ QVariantList GetStartingData::listOfElementsCoordinates(const QList<QVariant> &l
 
 const QString GetStartingData::addressIpSubstitution(QString str)
 {
+    const auto &headers = _context._packet.headers().allHeaders();
+    const QString& remoteAddr = headers["REMOTE_ADDR"];
+
     QStringList listParser =  str.split("/");
     if (remoteAddr.contains("192."))
         listParser[2] = internalNetwork;

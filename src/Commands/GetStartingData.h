@@ -24,7 +24,6 @@ namespace auto_review
         const QString addressIpSubstitution(QString str);
 
     private:
-        QString remoteAddr;
         const QString externalNetwork = "134.17.26.128:6662";
         const QString internalNetwork = "192.168.202.222:6662";
     };
