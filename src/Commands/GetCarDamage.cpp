@@ -37,7 +37,7 @@ network::ResponseShp GetCarDamage::exec()
         "id_element_damage, "
         "type_damage, "
         "comment "
-        "FROM car_damage"
+        "FROM car_damage "
         "WHERE id_car = :id AND status = false");
     selectQuery.prepare(sqlQuery);
     selectQuery.bindValue(":id", autoId);
