@@ -8,6 +8,8 @@
 #include "database/DBManager.h"
 #include "database/DBWraper.h"
 
+#include "Definitions.h"
+
 RegisterCommand(auto_review::GetCarDamage, "get_car_damage")
 
 
@@ -93,10 +95,35 @@ QVariantList GetCarDamage::listDamages(const QVariantList &list)
         else
             listPhotos = database::DBHelpers::queryToVariant(selectQuery);
 
-        map["photos"] = listPhotos;
+        map["photos"] = checkIpAddress(listPhotos);
 
         listResult.append(map);
     }
 
     return listResult;
+}
+
+const QVariantList &GetCarDamage::checkIpAddress(const QVariantList &list)
+{
+    const auto& remoteAddr = QString(_context._packet.headers().header("REMOTE_ADDR"));
+
+    QVariantList newList;
+    if (remoteAddr.contains(OUR_MASK))
+    {
+        for (const auto& url : list)
+        {
+            const QString& newUrl = url.toString().replace(VM_IP, INSIDE_IP);
+            newList << newUrl;
+        }
+
+        return list;
+    }
+    else
+    {
+        for (const auto& url : list)
+        {
+            const QString& newUrl = url.toString().replace(VM_IP, OUTSIDE_IP);
+            newList << newUrl;
+        }
+    }
 }
