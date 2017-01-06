@@ -24,6 +24,8 @@ network::ResponseShp GetStartingData::exec()
 
     auto& responce = _context._responce;
     responce->setHeaders(_context._packet.headers());
+    const auto &headers = _context._packet.headers().allHeaders();
+    remoteAddr = headers["REMOTE_ADDR"];
 
     QMap<QString, QString> mapTableComplaints;
     mapTableComplaints["accessories"]   = "SELECT * FROM accessories";
@@ -140,8 +142,8 @@ QVariantList GetStartingData::listOfElementsCoordinates(const QList<QVariant> &l
     {
         const auto& mapItem = item.toMap();
         const auto& urlId = mapItem.value("id").toString();
-        const auto& foregroundUrl = mapItem.value("foreground_url");
-        const auto& backgroundUrl = mapItem.value("background_url");
+        const auto& foregroundUrl = mapItem.value("foreground_url").toString();
+        const auto& backgroundUrl = mapItem.value("background_url").toString();
         const auto idCarElement = mapItem.value("id_car_element");
         const auto& axisX = mapItem.value("axis_X");
         const auto& axisY = mapItem.value("axis_Y");
@@ -151,8 +153,8 @@ QVariantList GetStartingData::listOfElementsCoordinates(const QList<QVariant> &l
         {
             QVariantMap mapObject;
             mapObject["id"] = urlId;
-            mapObject["foreground_url"] = foregroundUrl;
-            mapObject["background_url"] = backgroundUrl;
+            mapObject["foreground_url"] = addressIpSubstitution(foregroundUrl);
+            mapObject["background_url"] = addressIpSubstitution(backgroundUrl);
             mapObject[coordinates] = QVariant();
 
             mapObjectResult[urlId] = mapObject;
@@ -176,4 +178,15 @@ QVariantList GetStartingData::listOfElementsCoordinates(const QList<QVariant> &l
         listResult.append(element.value());
 
     return listResult;
+}
+
+
+const QString GetStartingData::addressIpSubstitution(QString str)
+{
+    QStringList listParser =  str.split("/");
+    if (remoteAddr.contains("192."))
+        listParser[2] = internalNetwork;
+    else
+        listParser[2] = externalNetwork;
+    return listParser.join("/");
 }

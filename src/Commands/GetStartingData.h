@@ -21,6 +21,12 @@ namespace auto_review
     private:
         QVariantList listOfPossibleDamages(const QList<QVariant> &list);
         QVariantList listOfElementsCoordinates(const QList<QVariant> &list);
-    };
+        const QString addressIpSubstitution(QString str);
 
+    private:
+        QString remoteAddr;
+        const QString externalNetwork = "134.17.26.128:6662";
+        const QString internalNetwork = "192.168.202.222:6662";
+    };
 }
+
