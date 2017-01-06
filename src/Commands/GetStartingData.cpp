@@ -8,6 +8,8 @@
 #include "database/DBWraper.h"
 #include "database/DBHelpers.h"
 
+#include "Definitions.h"
+
 RegisterCommand(auto_review::GetStartingData, "get_server_data")
 
 
@@ -151,8 +153,8 @@ QVariantList GetStartingData::listOfElementsCoordinates(const QList<QVariant> &l
         {
             QVariantMap mapObject;
             mapObject["id"] = urlId;
-            mapObject["foreground_url"] = addressIpSubstitution(foregroundUrl);
-            mapObject["background_url"] = addressIpSubstitution(backgroundUrl);
+            mapObject["foreground_url"] = checkIpAddress(foregroundUrl);
+            mapObject["background_url"] = checkIpAddress(backgroundUrl);
             mapObject[coordinates] = QVariant();
 
             mapObjectResult[urlId] = mapObject;
@@ -178,17 +180,17 @@ QVariantList GetStartingData::listOfElementsCoordinates(const QList<QVariant> &l
     return listResult;
 }
 
-
-const QString GetStartingData::addressIpSubstitution(QString str)
+const QString &GetStartingData::checkIpAddress(QString url)
 {
-    const auto &headers = _context._packet.headers().allHeaders();
-    const QString& remoteAddr = headers["REMOTE_ADDR"];
-    const int posIpAddr = 2;
-
-    QStringList listParser =  str.split("/");
-    if (remoteAddr.contains("192."))
-        listParser[posIpAddr] = internalNetwork;
+    const auto& remoteAddr = QString(_context._packet.headers().header("REMOTE_ADDR"));
+    if (remoteAddr.contains(OUR_MASK))
+    {
+        const QString& newUrl = url.replace(VM_IP, INSIDE_IP);
+        return newUrl;
+    }
     else
-        listParser[posIpAddr] = externalNetwork;
-    return listParser.join("/");
+    {
+        const QString& newUrl = url.replace(VM_IP, OUTSIDE_IP);
+        return newUrl;
+    }
 }
