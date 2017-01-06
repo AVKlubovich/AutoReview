@@ -183,11 +183,12 @@ const QString GetStartingData::addressIpSubstitution(QString str)
 {
     const auto &headers = _context._packet.headers().allHeaders();
     const QString& remoteAddr = headers["REMOTE_ADDR"];
+    const int posIpAddr = 2;
 
     QStringList listParser =  str.split("/");
     if (remoteAddr.contains("192."))
-        listParser[2] = internalNetwork;
+        listParser[posIpAddr] = internalNetwork;
     else
-        listParser[2] = externalNetwork;
+        listParser[posIpAddr] = externalNetwork;
     return listParser.join("/");
 }
