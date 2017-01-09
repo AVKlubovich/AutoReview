@@ -132,5 +132,5 @@ const QVariantList &GetCarDamage::checkIpAddress(const QVariantList &list)
         }
     }
 
-    return list;
+    return newList;
 }

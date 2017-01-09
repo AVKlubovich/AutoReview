@@ -7,7 +7,7 @@
 #include "web-exchange/WebRequestManager.h"
 #include "web-exchange/WebRequest.h"
 
-RegisterCommand(auto_review::AttachDriverToAuto, "attach_auto_to_car")
+RegisterCommand(auto_review::AttachDriverToAuto, "attach_driver_to_car")
 
 
 using namespace auto_review;
@@ -32,11 +32,11 @@ network::ResponseShp AttachDriverToAuto::exec()
     auto webRequest = network::WebRequestShp::create("type_query");
 
     QVariantMap userData;
-    userData["type_query"] = "attach_driver_to_auto";
+    userData["type_query"] = "autoreview_set_driver_to_auto";
     userData["user_login"] = bodyData.value("login").toString();
+    userData["user_pass"] = QString(QCryptographicHash::hash(bodyData.value("password").toString().toStdString().data(), QCryptographicHash::Md5).toHex());
     userData["auto_id"] = QString::number(autoId);
     userData["driver_id"] = QString::number(driverId);
-    userData["user_pass"] = QString(QCryptographicHash::hash(bodyData.value("password").toString().toStdString().data(), QCryptographicHash::Md5).toHex());
     webRequest->setArguments(userData);
     webRequest->setCallback(nullptr);
 
