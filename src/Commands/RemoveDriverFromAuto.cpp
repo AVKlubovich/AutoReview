@@ -35,7 +35,7 @@ network::ResponseShp RemoveDriverFromAuto::exec()
     QVariantMap userData;
     userData["type_query"] = "attach_driver_to_auto";
     userData["user_login"] = bodyData.value("login").toString();
-    userData["driver_id"] = QString::number(driverId);
+    userData["driver_id"] = 0;
     userData["auto_id"] = "0";
     userData["user_pass"] = QString(QCryptographicHash::hash(bodyData.value("password").toString().toStdString().data(), QCryptographicHash::Md5).toHex());
     webRequest->setArguments(userData);

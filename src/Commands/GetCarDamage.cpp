@@ -91,7 +91,8 @@ QVariantList GetCarDamage::listDamages(const QVariantList &list)
 
         QVariantList listPhotos;
         if (!addPhotosQueryResult)
-            listPhotos.append(QString("error select photos from id_car_damage = %1").arg(QString::number(damageId)));
+            listPhotos.append(QString("error select photos from id_car_damage = %1")
+                              .arg(QString::number(damageId)));
         else
             listPhotos = database::DBHelpers::queryToVariant(selectQuery);
 
@@ -112,7 +113,7 @@ const QVariantList &GetCarDamage::checkIpAddress(const QVariantList &list)
     {
         for (const auto& url : list)
         {
-            const QString& newUrl = url.toString().replace(VM_IP, INSIDE_IP);
+            const QString& newUrl = url.toMap()["url"].toString().replace(VM_IP, INSIDE_IP);
             newList << newUrl;
         }
 
@@ -122,7 +123,7 @@ const QVariantList &GetCarDamage::checkIpAddress(const QVariantList &list)
     {
         for (const auto& url : list)
         {
-            const QString& newUrl = url.toString().replace(VM_IP, OUTSIDE_IP);
+            const QString& newUrl = url.toMap()["url"].toString().replace(VM_IP, OUTSIDE_IP);
             newList << newUrl;
         }
     }
