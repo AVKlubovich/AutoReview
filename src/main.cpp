@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
     QCoreApplication a(argc, argv);
 
 #ifdef Q_OS_LINUX
-    if(QCoreApplication::arguments().contains("--daemon"))
+    if (QCoreApplication::arguments().contains("--daemon"))
     {
         daemon(0,0);
     }
