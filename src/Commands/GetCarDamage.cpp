@@ -119,8 +119,6 @@ const QVariantList &GetCarDamage::checkIpAddress(const QVariantList &list)
             map["url"] = newUrl;
             newList << QVariant::fromValue(map);
         }
-
-        return list;
     }
     else
     {
@@ -133,4 +131,6 @@ const QVariantList &GetCarDamage::checkIpAddress(const QVariantList &list)
             newList << QVariant::fromValue(map);
         }
     }
+
+    return list;
 }
