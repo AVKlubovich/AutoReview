@@ -113,7 +113,7 @@ const QVariantList &GetCarDamage::checkIpAddress(const QVariantList &list)
     {
         for (const auto& url : list)
         {
-            const QString& newUrl = url.toMap()["url"].toString().replace(VM_IP, INSIDE_IP);
+            const QString newUrl = url.toMap()["url"].toString().replace(VM_IP, INSIDE_IP);
 
             QVariantMap map;
             map["url"] = newUrl;
@@ -126,7 +126,7 @@ const QVariantList &GetCarDamage::checkIpAddress(const QVariantList &list)
     {
         for (const auto& url : list)
         {
-            const QString& newUrl = url.toMap()["url"].toString().replace(VM_IP, OUTSIDE_IP);
+            const QString newUrl = url.toMap()["url"].toString().replace(VM_IP, OUTSIDE_IP);
 
             QVariantMap map;
             map["url"] = newUrl;
