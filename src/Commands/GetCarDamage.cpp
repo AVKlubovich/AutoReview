@@ -104,7 +104,7 @@ QVariantList GetCarDamage::listDamages(const QVariantList &list)
     return listResult;
 }
 
-const QVariantList &GetCarDamage::checkIpAddress(const QVariantList &list)
+QVariantList GetCarDamage::checkIpAddress(const QVariantList &list)
 {
     const auto& remoteAddr = QString(_context._packet.headers().header("REMOTE_ADDR"));
 
