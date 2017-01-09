@@ -28,15 +28,18 @@ network::ResponseShp ChangeCarStatus::exec()
     const auto autoId = bodyData["id_car"].toInt();
     const auto statusAuto = bodyData["status_car"].toInt();
 
+    const auto& userLogin = bodyData["login"].toString();
+    const auto& userPass = bodyData["password"].toString();
+
     auto webManager = network::WebRequestManager::instance();
     auto webRequest = network::WebRequestShp::create("type_query");
 
     QVariantMap userData;
-    userData["type_query"] = "change_auto_status";
-    userData["user_login"] = bodyData.value("login").toString();
+    userData["type_query"] = "autoreview_change_auto_status";
+    userData["user_login"] = userLogin;
+    userData["user_pass"] = QString(QCryptographicHash::hash(userPass.toStdString().data(), QCryptographicHash::Md5).toHex());
     userData["auto_id"] = QString::number(autoId);
-    userData["status"] = QString::number(statusAuto);
-    userData["user_pass"] = QString(QCryptographicHash::hash(bodyData.value("password").toString().toStdString().data(), QCryptographicHash::Md5).toHex());
+    userData["auto_status"] = QString::number(statusAuto);
     webRequest->setArguments(userData);
     webRequest->setCallback(nullptr);
 

@@ -26,7 +26,7 @@ network::ResponseShp GetCarAccessories::exec()
     const auto& incomingData = _context._packet.body().toMap();
     const auto& mapData = incomingData.value("body").toMap();
 
-    const auto& id = mapData["id_car"].toString();
+    const auto& carId = mapData["id_car"].toString();
 
     const auto wraper = database::DBManager::instance().getDBWraper();
     auto addQuery = wraper->query();
@@ -34,9 +34,9 @@ network::ResponseShp GetCarAccessories::exec()
     const auto& sqlQuery = QString(
         "SELECT id_accessory AS id, status, comment, date_update "
         "FROM car_accessories "
-        "WHERE id_car=:id");
+        "WHERE id_car = :carId");
     addQuery.prepare(sqlQuery);
-    addQuery.bindValue(":id", id);
+    addQuery.bindValue(":carId", carId);
     bool addCarQueryResult = wraper->execQuery(addQuery);
 
     if (!addCarQueryResult)

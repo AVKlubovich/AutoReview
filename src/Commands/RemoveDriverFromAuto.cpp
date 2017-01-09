@@ -27,17 +27,20 @@ network::ResponseShp RemoveDriverFromAuto::exec()
     const auto& incomingData = _context._packet.body().toMap();
     const auto& bodyData = incomingData.value("body").toMap();
 
-    const auto driverId = bodyData["id_driver"].toInt();
+    const auto autoId = bodyData["id_car"].toInt();
+
+    const auto& userLogin = bodyData["login"].toString();
+    const auto& userPass = bodyData["password"].toString();
 
     auto webManager = network::WebRequestManager::instance();
     auto webRequest = network::WebRequestShp::create("type_query");
 
     QVariantMap userData;
-    userData["type_query"] = "attach_driver_to_auto";
-    userData["user_login"] = bodyData.value("login").toString();
-    userData["driver_id"] = 0;
-    userData["auto_id"] = "0";
-    userData["user_pass"] = QString(QCryptographicHash::hash(bodyData.value("password").toString().toStdString().data(), QCryptographicHash::Md5).toHex());
+    userData["type_query"] = "autoreview_set_driver_to_auto";
+    userData["user_login"] = userLogin;
+    userData["user_pass"] = QString(QCryptographicHash::hash(userPass.toStdString().data(), QCryptographicHash::Md5).toHex());
+    userData["auto_id"] = QString::number(autoId);
+    userData["driver_id"] = "0";
     webRequest->setArguments(userData);
     webRequest->setCallback(nullptr);
 

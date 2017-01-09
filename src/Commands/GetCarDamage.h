@@ -20,7 +20,7 @@ namespace auto_review
 
     private:
         QVariantList listDamages(const QVariantList &list);
-        const QVariantList &checkIpAddress(const QVariantList &list);
+        QVariantList checkIpAddress(const QVariantList &list);
     };
 
 }

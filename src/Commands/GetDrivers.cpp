@@ -25,17 +25,27 @@ network::ResponseShp GetDrivers::exec()
     const auto& incomingData = _context._packet.body().toMap();
     const auto& bodyData = incomingData.value("body").toMap();
 
+    const auto& searchStr = bodyData["search"].toString();
+    if (searchStr.count() < 3)
+    {
+        sendError("Search lenght less than 3", "bad_parameter", signature());
+        return network::ResponseShp();
+    }
+
     const auto parkId = bodyData["id_park"].toInt();
+    const auto& userLogin = bodyData["login"].toString();
+    const auto& userPass = bodyData["password"].toString();
 
     auto webManager = network::WebRequestManager::instance();
-    auto webRequest = network::WebRequestShp::create("type_query");
+    auto webRequest = network::WebRequestShp::create("sub_qry");
 
     QVariantMap userData;
-    userData["type_query"] = "get_drivers_data";
-    userData["user_login"] = bodyData.value("login").toString();
+    userData["sub_qry"] = "get_drivers_data";
+    userData["user_login"] = userLogin;
+    userData["user_pass"] = QString(QCryptographicHash::hash(userPass.toStdString().data(), QCryptographicHash::Md5).toHex());
     userData["our"] = "0";
     userData["park"] = QString::number(parkId);
-    userData["user_pass"] = QString(QCryptographicHash::hash(bodyData.value("password").toString().toStdString().data(), QCryptographicHash::Md5).toHex());
+    userData["search"] = searchStr;
     webRequest->setArguments(userData);
     webRequest->setCallback(nullptr);
 

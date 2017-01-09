@@ -35,21 +35,24 @@ network::ResponseShp Login::exec()
 
 
     const auto& incomingData = _context._packet.body().toMap();
-    const auto& uData = incomingData.value("body").toMap();
+    const auto& bodyData = incomingData.value("body").toMap();
 
-    if(!uData.contains("login") ||
-       !uData.contains("password"))
+    if (!bodyData.contains("login") ||
+        !bodyData.contains("password"))
     {
         setError(ERROR_LOGIN_OR_PASSWORD);
         network::ResponseShp();
     }
 
+    const auto& userLogin = bodyData["login"].toString();
+    const auto& userPass = bodyData["password"].toString();
+
     auto webManager = network::WebRequestManager::instance();
 
     QVariantMap userData;
     userData["sub_qry"] = "get_auto_review_rights";
-    userData["user_login"] = uData.value("login");
-    userData["user_pass"] = QString(QCryptographicHash::hash(uData.value("password").toString().toStdString().data(), QCryptographicHash::Md5).toHex());
+    userData["user_login"] = userLogin;
+    userData["user_pass"] = QString(QCryptographicHash::hash(userPass.toStdString().data(), QCryptographicHash::Md5).toHex());
     webRequest->setArguments(userData);
     webRequest->setCallback(nullptr);
 
