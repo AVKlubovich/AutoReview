@@ -71,20 +71,23 @@ network::ResponseShp GetCarInfo::exec()
     const auto& array = map["array"].toList();
     auto infoMap = array.first().toMap();
 
+    const auto& wraper = database::DBManager::instance().getDBWraper();
+
     const auto& selectDataStr = QString(
         "SELECT "
-        "mileage, "
+        "info_about_cars.id, "
+        "info_about_cars.mileage, "
         "insurance_end, "
         "diagnostic_card_end, "
-        "tires_type.type AS tire_type "
+        "id_tire, "
+        "(SELECT maintenance.mileage FROM maintenance WHERE id_car = info_about_cars.id_car ORDER BY id DESC LIMIT 1) as last_maintenance "
         "FROM info_about_cars "
-        "INNER JOIN tires_type "
-        "ON (tires_type.id = id_tire) "
-        "WHERE id_car = :carId "
-        "ORDER BY info_about_cars.id"
+        "INNER JOIN maintenance "
+        "ON (maintenance.id_car = info_about_cars.id_car) "
+        "WHERE info_about_cars.id_car = :carId "
+        "ORDER BY info_about_cars.id DESC LIMIT 1"
         );
 
-    const auto& wraper = database::DBManager::instance().getDBWraper();
     auto selectDataQuery = wraper->query();
     selectDataQuery.prepare(selectDataStr);
     selectDataQuery.bindValue(":carId", carId);
