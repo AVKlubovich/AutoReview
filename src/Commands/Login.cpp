@@ -92,6 +92,7 @@ network::ResponseShp Login::exec()
     qint64 idPark = -1;
     QString parkName;
     const auto& rightsArray = map["array"].toList();
+    QVariantMap availableStatuses;
     for (const auto& right : rightsArray)
     {
         const auto& rightMap = right.toMap();
@@ -106,6 +107,10 @@ network::ResponseShp Login::exec()
             parkRight = true;
             idPark = rightMap["id_park"].toULongLong();
             parkName = rightMap["name"].toString();
+        }
+        else if (idRight == AVAILABLE_STATUSES_RIGHT)
+        {
+            availableStatuses = rightMap["statuses"].toMap();
         }
     }
 
@@ -148,6 +153,7 @@ network::ResponseShp Login::exec()
     body["full_name"] = fullName;
     body["id_park"] = idPark;
     body["park_name"] = parkName;
+    body["statuses"] = QVariant::fromValue(availableStatuses);
 
     QVariantMap result;
     result["head"] = QVariant::fromValue(head);
