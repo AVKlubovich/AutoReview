@@ -75,7 +75,7 @@ network::ResponseShp GetCarInfo::exec()
         "SELECT "
         "mileage, "
         "insurance_end, "
-        "diagnostic_card, "
+        "diagnostic_card_end, "
         "tires_type.type AS tire_type "
         "FROM info_about_cars "
         "INNER JOIN tires_type "
@@ -102,7 +102,7 @@ network::ResponseShp GetCarInfo::exec()
     if (!infoList.isEmpty())
     {
         const auto& dbInfo = infoList.last().toMap();
-        for (auto& it = dbInfo.begin(); it != dbInfo.end(); ++it)
+        for (auto it = dbInfo.begin(); it != dbInfo.end(); ++it)
             infoMap[it.key()] = it.value();
     }
 
