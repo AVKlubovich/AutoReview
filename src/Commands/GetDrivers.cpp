@@ -40,7 +40,7 @@ network::ResponseShp GetDrivers::exec()
     auto webRequest = network::WebRequestShp::create("sub_qry");
 
     QVariantMap userData;
-    userData["sub_qry"] = "get_drivers_data";
+    userData["sub_qry"] = "autoreview_driver_search";
     userData["user_login"] = userLogin;
     userData["user_pass"] = QString(QCryptographicHash::hash(userPass.toStdString().data(), QCryptographicHash::Md5).toHex());
     userData["our"] = "0";
