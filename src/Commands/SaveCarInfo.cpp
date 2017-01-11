@@ -35,13 +35,20 @@ network::ResponseShp SaveCarInfo::exec()
     const auto tireId = bodyData["id_tire"].toInt();
 
     const auto& saveCarInfoStr = QString(
-        "UPDATE info_about_cars "
-        "SET "
-        "mileage = :mileage, "
-        "insurance_end = :insuranceEnd, "
-        "diagnostic_card_end = :diagnosticCardEnd, "
-        "id_tire = :tireId "
-        "WHERE id = (SELECT id from info_about_cars WHERE id_car = :carId ORDER BY id DESC LIMIT 1)"
+        "INSERT INTO info_about_cars "
+        "("
+            "mileage, "
+            "insurance_end, "
+            "diagnostic_card_end, "
+            "id_tire"
+        ") "
+        "VALUES"
+        "("
+            ":mileage, "
+            ":insuranceEnd, "
+            ":diagnosticCardEnd, "
+            ":tireId"
+        ")"
         );
 
     const auto wraper = database::DBManager::instance().getDBWraper();
