@@ -37,28 +37,32 @@ network::ResponseShp SaveCarInfo::exec()
     const auto& saveCarInfoStr = QString(
         "INSERT INTO info_about_cars "
         "("
+            "id_car, "
             "mileage, "
             "insurance_end, "
             "diagnostic_card_end, "
-            "id_tire"
+            "id_tire, "
+            "date_create"
         ") "
         "VALUES"
         "("
+            ":carId, "
             ":mileage, "
             ":insuranceEnd, "
             ":diagnosticCardEnd, "
-            ":tireId"
+            ":tireId, "
+            "now()"
         ")"
         );
 
     const auto wraper = database::DBManager::instance().getDBWraper();
     auto saveCarInfoQuery = wraper->query();
     saveCarInfoQuery.prepare(saveCarInfoStr);
+    saveCarInfoQuery.bindValue(":carId", carId);
     saveCarInfoQuery.bindValue(":mileage", mileage);
     saveCarInfoQuery.bindValue(":insuranceEnd", insuranceEnd);
     saveCarInfoQuery.bindValue(":diagnosticCardEnd", diagnosticCardEnd);
     saveCarInfoQuery.bindValue("tireId", tireId);
-    saveCarInfoQuery.bindValue(":carId", carId);
 
     const auto saveCarInfoResult = saveCarInfoQuery.exec();
     if (!saveCarInfoResult)
