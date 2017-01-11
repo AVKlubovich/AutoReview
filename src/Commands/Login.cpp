@@ -92,7 +92,7 @@ network::ResponseShp Login::exec()
     qint64 idPark = -1;
     QString parkName;
     const auto& rightsArray = map["array"].toList();
-    QVariantMap availableStatuses;
+    QVariantList availableStatuses;
     for (const auto& right : rightsArray)
     {
         const auto& rightMap = right.toMap();
@@ -110,7 +110,7 @@ network::ResponseShp Login::exec()
         }
         else if (idRight == AVAILABLE_STATUSES_RIGHT)
         {
-            availableStatuses = rightMap["statuses"].toMap();
+            availableStatuses = rightMap["statuses"].toList();
         }
     }
 
