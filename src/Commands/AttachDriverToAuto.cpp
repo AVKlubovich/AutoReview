@@ -63,7 +63,7 @@ network::ResponseShp AttachDriverToAuto::exec()
     if (status < 0)
     {
         sendError("Bad response from remote server", "remove_server_error", signature());
-        qDebug() << __FUNCTION__ << map["err"].toString();
+        qDebug() << __FUNCTION__ << map["error"].toList().first().toString();
         return network::ResponseShp();
     }
 
