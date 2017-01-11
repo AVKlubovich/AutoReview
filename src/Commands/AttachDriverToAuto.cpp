@@ -32,10 +32,10 @@ network::ResponseShp AttachDriverToAuto::exec()
     const auto& userPass = bodyData["password"].toString();
 
     auto webManager = network::WebRequestManager::instance();
-    auto webRequest = network::WebRequestShp::create("type_query");
+    auto webRequest = network::WebRequestShp::create("sub_qry");
 
     QVariantMap userData;
-    userData["type_query"] = "autoreview_set_driver_to_auto";
+    userData["sub_qry"] = "autoreview_set_driver_to_auto";
     userData["user_login"] = userLogin;
     userData["user_pass"] = QString(QCryptographicHash::hash(userPass.toStdString().data(), QCryptographicHash::Md5).toHex());
     userData["auto_id"] = QString::number(autoId);
