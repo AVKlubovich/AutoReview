@@ -7,7 +7,7 @@
 #include "web-exchange/WebRequestManager.h"
 #include "web-exchange/WebRequest.h"
 
-RegisterCommand(auto_review::RemoveDriverFromAuto, "remove_driver_from_auto")
+RegisterCommand(auto_review::RemoveDriverFromAuto, "remove_driver_from_car")
 
 
 using namespace auto_review;
@@ -33,10 +33,10 @@ network::ResponseShp RemoveDriverFromAuto::exec()
     const auto& userPass = bodyData["password"].toString();
 
     auto webManager = network::WebRequestManager::instance();
-    auto webRequest = network::WebRequestShp::create("type_query");
+    auto webRequest = network::WebRequestShp::create("sub_qry");
 
     QVariantMap userData;
-    userData["type_query"] = "autoreview_set_driver_to_auto";
+    userData["sub_qry"] = "autoreview_set_driver_to_auto";
     userData["user_login"] = userLogin;
     userData["user_pass"] = QString(QCryptographicHash::hash(userPass.toStdString().data(), QCryptographicHash::Md5).toHex());
     userData["auto_id"] = QString::number(autoId);
@@ -64,7 +64,7 @@ network::ResponseShp RemoveDriverFromAuto::exec()
     if (status < 0)
     {
         sendError("Bad response from remote server", "remove_server_error", signature());
-        qDebug() << __FUNCTION__ << map["err"].toString();
+        qDebug() << __FUNCTION__ << map["error"].toList().first().toString();
         return network::ResponseShp();
     }
 
