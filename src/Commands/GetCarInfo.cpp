@@ -69,7 +69,7 @@ network::ResponseShp GetCarInfo::exec()
     }
 
     const auto& array = map["array"].toList();
-    auto& infoMap = array.first().toMap();
+    auto infoMap = array.first().toMap();
 
     const auto& selectDataStr = QString(
         "SELECT "
@@ -101,8 +101,9 @@ network::ResponseShp GetCarInfo::exec()
     const auto& infoList = database::DBHelpers::queryToVariant(selectDataQuery);
     if (!infoList.isEmpty())
     {
-        auto& dbInfo = infoList.last().toMap();
-        infoMap.swap(dbInfo);
+        const auto& dbInfo = infoList.last().toMap();
+        for (auto& it = dbInfo.begin(); it != dbInfo.end(); ++it)
+            infoMap[it.key()] = it.value();
     }
 
     QVariantMap head;
