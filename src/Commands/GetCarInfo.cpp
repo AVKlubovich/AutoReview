@@ -7,6 +7,10 @@
 #include "web-exchange/WebRequestManager.h"
 #include "web-exchange/WebRequest.h"
 
+#include "database/DBManager.h"
+#include "database/DBWraper.h"
+#include "database/DBHelpers.h"
+
 RegisterCommand(auto_review::GetCarInfo, "get_car_info")
 
 
@@ -25,7 +29,7 @@ network::ResponseShp GetCarInfo::exec()
     const auto& incomingData = _context._packet.body().toMap();
     const auto& bodyData = incomingData.value("body").toMap();
 
-    const auto autoId = bodyData["id_car"].toInt();
+    const auto carId = bodyData["id_car"].toInt();
 
     const auto& userLogin = bodyData["login"].toString();
     const auto& userPass = bodyData["password"].toString();
@@ -35,7 +39,7 @@ network::ResponseShp GetCarInfo::exec()
 
     QVariantMap userData;
     userData["type_query"] = "get_autos_data";
-    userData["auto_id"] = QString::number(autoId);
+    userData["auto_id"] = QString::number(carId);
     userData["user_login"] = userLogin;
     userData["user_pass"] = QString(QCryptographicHash::hash(userPass.toStdString().data(), QCryptographicHash::Md5).toHex());
     webRequest->setArguments(userData);
@@ -65,7 +69,41 @@ network::ResponseShp GetCarInfo::exec()
     }
 
     const auto& array = map["array"].toList();
-    const auto& infoMap = array.first().toMap();
+    auto& infoMap = array.first().toMap();
+
+    const auto& selectDataStr = QString(
+        "SELECT "
+        "mileage, "
+        "insurance_end, "
+        "diagnostic_card, "
+        "tires_type.type AS tire_type "
+        "FROM info_about_cars "
+        "INNER JOIN tires_type "
+        "ON (tires_type.id = id_tire) "
+        "WHERE id_car = :carId "
+        "ORDER BY info_about_cars.id"
+        );
+
+    const auto& wraper = database::DBManager::instance().getDBWraper();
+    auto selectDataQuery = wraper->query();
+    selectDataQuery.prepare(selectDataStr);
+    selectDataQuery.bindValue(":carId", carId);
+
+    const auto selectDataResult = selectDataQuery.exec();
+    if (!selectDataResult)
+    {
+        sendError("Database error", "db_error", signature());
+        qDebug() << __FUNCTION__ << selectDataQuery.lastError().text();
+        qDebug() << __FUNCTION__ << selectDataQuery.lastQuery();
+        return network::ResponseShp();
+    }
+
+    const auto& infoList = database::DBHelpers::queryToVariant(selectDataQuery);
+    if (!infoList.isEmpty())
+    {
+        auto& dbInfo = infoList.last().toMap();
+        infoMap.swap(dbInfo);
+    }
 
     QVariantMap head;
     head["type"] = signature();
