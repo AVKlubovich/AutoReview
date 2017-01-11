@@ -69,6 +69,13 @@ network::ResponseShp GetCarInfo::exec()
     }
 
     const auto& array = map["array"].toList();
+    if (array.isEmpty())
+    {
+        sendError("Bad response from remote server", "remove_server_error", signature());
+        qDebug() << __FUNCTION__ << "error: array is empty";
+        return network::ResponseShp();
+    }
+
     auto infoMap = array.first().toMap();
 
     const auto& wraper = database::DBManager::instance().getDBWraper();
