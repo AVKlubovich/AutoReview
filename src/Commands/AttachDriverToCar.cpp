@@ -1,5 +1,5 @@
 #include "Common.h"
-#include "RemoveDriverFromAuto.h"
+#include "AttachDriverToCar.h"
 
 #include "server-core/Commands/CommandFactory.h"
 #include "server-core/Responce/Responce.h"
@@ -7,20 +7,18 @@
 #include "web-exchange/WebRequestManager.h"
 #include "web-exchange/WebRequest.h"
 
-RegisterCommand(auto_review::RemoveDriverFromAuto, "remove_driver_from_auto")
+RegisterCommand(auto_review::AttachDriverToAuto, "attach_driver_to_car")
 
 
 using namespace auto_review;
 
-RemoveDriverFromAuto::RemoveDriverFromAuto(const Context& newContext)
+AttachDriverToAuto::AttachDriverToAuto(const Context& newContext)
     : Command(newContext)
 {
 }
 
-network::ResponseShp RemoveDriverFromAuto::exec()
+network::ResponseShp AttachDriverToAuto::exec()
 {
-    qDebug() << __FUNCTION__ << "was runned" << QDateTime::currentDateTime() << endl;
-
     auto& response = _context._responce;
     response->setHeaders(_context._packet.headers());
 
@@ -28,19 +26,20 @@ network::ResponseShp RemoveDriverFromAuto::exec()
     const auto& bodyData = incomingData.value("body").toMap();
 
     const auto autoId = bodyData["id_car"].toInt();
+    const auto driverId = bodyData["id_driver"].toInt();
 
     const auto& userLogin = bodyData["login"].toString();
     const auto& userPass = bodyData["password"].toString();
 
     auto webManager = network::WebRequestManager::instance();
-    auto webRequest = network::WebRequestShp::create("type_query");
+    auto webRequest = network::WebRequestShp::create("sub_qry");
 
     QVariantMap userData;
-    userData["type_query"] = "autoreview_set_driver_to_auto";
+    userData["sub_qry"] = "autoreview_set_driver_to_auto";
     userData["user_login"] = userLogin;
     userData["user_pass"] = QString(QCryptographicHash::hash(userPass.toStdString().data(), QCryptographicHash::Md5).toHex());
     userData["auto_id"] = QString::number(autoId);
-    userData["driver_id"] = "0";
+    userData["driver_id"] = QString::number(driverId);
     webRequest->setArguments(userData);
     webRequest->setCallback(nullptr);
 
@@ -64,7 +63,7 @@ network::ResponseShp RemoveDriverFromAuto::exec()
     if (status < 0)
     {
         sendError("Bad response from remote server", "remove_server_error", signature());
-        qDebug() << __FUNCTION__ << map["err"].toString();
+        qDebug() << __FUNCTION__ << map["error"].toList().first().toString();
         return network::ResponseShp();
     }
 
