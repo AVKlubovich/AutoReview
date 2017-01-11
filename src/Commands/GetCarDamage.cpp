@@ -49,7 +49,7 @@ network::ResponseShp GetCarDamage::exec()
     {
         sendError("error select car_damage", "db_error", signature());
         qDebug() << "error select car_damage" << selectQuery.lastError().text();
-        return QSharedPointer<network::Response>();
+        return network::ResponseShp();
     }
 
     const auto& listCar = database::DBHelpers::queryToVariant(selectQuery);
@@ -66,7 +66,7 @@ network::ResponseShp GetCarDamage::exec()
     result["body"] = QVariant::fromValue(body);
     _context._responce->setBody(QVariant::fromValue(result));
 
-    return QSharedPointer<network::Response>();
+    return network::ResponseShp();
 }
 
 QVariantList GetCarDamage::listDamages(const QVariantList &list)

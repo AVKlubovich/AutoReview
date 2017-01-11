@@ -17,6 +17,13 @@ namespace auto_review
 
     public:
         network::ResponseShp exec() override;
+
+    private:
+        bool insertNewData(const QVariantMap& bodyData);
+        bool updateNewData(const QVariantMap& bodyData);
+
+    private:
+        quint64 _recordId = 0;
     };
 
 }

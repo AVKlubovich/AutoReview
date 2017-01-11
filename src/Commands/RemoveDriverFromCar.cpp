@@ -79,5 +79,5 @@ network::ResponseShp RemoveDriverFromAuto::exec()
     result["body"] = QVariant::fromValue(body);
     _context._responce->setBody(QVariant::fromValue(result));
 
-    return QSharedPointer<network::Response>();
+    return network::ResponseShp();
 }
