@@ -28,6 +28,41 @@ network::ResponseShp SaveCarInfo::exec()
     const auto& incomingData = _context._packet.body().toMap();
     const auto& bodyData = incomingData.value("body").toMap();
 
+    bool upsertResult = false;
+    if (bodyData.contains("id_record"))
+    {
+        _recordId = bodyData["id_record"].toULongLong();
+        upsertResult = updateNewData(bodyData);
+    }
+    else
+    {
+        upsertResult = insertNewData(bodyData);
+    }
+
+    if (!upsertResult)
+    {
+        sendError("Database error", "db_error", signature());
+        return network::ResponseShp();
+    }
+
+    QVariantMap head;
+    head["type"] = signature();
+
+    QVariantMap body;
+    body["status"] = 1;
+    if (_recordId != 0)
+        body["id_record"] = _recordId;
+
+    QVariantMap result;
+    result["head"] = QVariant::fromValue(head);
+    result["body"] = QVariant::fromValue(body);
+    _context._responce->setBody(QVariant::fromValue(result));
+
+    return network::ResponseShp();
+}
+
+bool SaveCarInfo::insertNewData(const QVariantMap& bodyData)
+{
     const auto carId = bodyData["id_car"].toLongLong();
     const auto mileage = bodyData["mileage"].toULongLong();
     const auto& insuranceEnd = bodyData["insurance_end"].toString();
@@ -52,7 +87,8 @@ network::ResponseShp SaveCarInfo::exec()
             ":diagnosticCardEnd, "
             ":tireId, "
             "now()"
-        ")"
+        ") "
+        "RETURNING id"
         );
 
     const auto wraper = database::DBManager::instance().getDBWraper();
@@ -62,7 +98,7 @@ network::ResponseShp SaveCarInfo::exec()
     saveCarInfoQuery.bindValue(":mileage", mileage);
     saveCarInfoQuery.bindValue(":insuranceEnd", insuranceEnd);
     saveCarInfoQuery.bindValue(":diagnosticCardEnd", diagnosticCardEnd);
-    saveCarInfoQuery.bindValue("tireId", tireId);
+    saveCarInfoQuery.bindValue(":tireId", tireId);
 
     const auto saveCarInfoResult = saveCarInfoQuery.exec();
     if (!saveCarInfoResult)
@@ -70,19 +106,56 @@ network::ResponseShp SaveCarInfo::exec()
         sendError("Database error", "db_error", signature());
         qDebug() << __FUNCTION__ << saveCarInfoQuery.lastError().text();
         qDebug() << __FUNCTION__ << saveCarInfoQuery.lastQuery();
-        return network::ResponseShp();
+        return false;
     }
 
-    QVariantMap head;
-    head["type"] = signature();
+    if (!saveCarInfoQuery.first())
+    {
+        sendError("Database error", "db_error", signature());
+        qDebug() << __FUNCTION__ << saveCarInfoQuery.lastError().text();
+        qDebug() << __FUNCTION__ << saveCarInfoQuery.lastQuery();
+        return false;
+    }
 
-    QVariantMap body;
-    body["status"] = 1;
+    _recordId = saveCarInfoQuery.value("id").toULongLong();
 
-    QVariantMap result;
-    result["head"] = QVariant::fromValue(head);
-    result["body"] = QVariant::fromValue(body);
-    _context._responce->setBody(QVariant::fromValue(result));
+    return true;
+}
 
-    return QSharedPointer<network::Response>();
+bool SaveCarInfo::updateNewData(const QVariantMap& bodyData)
+{
+    const auto mileage = bodyData["mileage"].toULongLong();
+    const auto& insuranceEnd = bodyData["insurance_end"].toString();
+    const auto& diagnosticCardEnd = bodyData["diagnostic_card_end"].toString();
+    const auto tireId = bodyData["id_tire"].toInt();
+
+    const auto& saveCarInfoStr = QString(
+        "UPDATE info_about_cars "
+        "SET "
+        "mileage = :mileage, "
+        "insurance_end = :insuranceEnd, "
+        "diagnostic_card_end = :diagnosticCardEnd, "
+        "id_tire = :tireId "
+        "WHERE id = :recordId"
+        );
+
+    const auto wraper = database::DBManager::instance().getDBWraper();
+    auto saveCarInfoQuery = wraper->query();
+    saveCarInfoQuery.prepare(saveCarInfoStr);
+    saveCarInfoQuery.bindValue(":recordId", _recordId);
+    saveCarInfoQuery.bindValue(":mileage", mileage);
+    saveCarInfoQuery.bindValue(":insuranceEnd", insuranceEnd);
+    saveCarInfoQuery.bindValue(":diagnosticCardEnd", diagnosticCardEnd);
+    saveCarInfoQuery.bindValue(":tireId", tireId);
+
+    const auto saveCarInfoResult = saveCarInfoQuery.exec();
+    if (!saveCarInfoResult)
+    {
+        sendError("Database error", "db_error", signature());
+        qDebug() << __FUNCTION__ << saveCarInfoQuery.lastError().text();
+        qDebug() << __FUNCTION__ << saveCarInfoQuery.lastQuery();
+        return false;
+    }
+
+    return true;
 }

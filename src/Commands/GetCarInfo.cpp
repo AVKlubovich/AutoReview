@@ -82,7 +82,6 @@ network::ResponseShp GetCarInfo::exec()
 
     const auto& selectDataStr = QString(
         "SELECT "
-        "info_about_cars.id, "
         "info_about_cars.mileage, "
         "insurance_end, "
         "diagnostic_card_end, "
@@ -128,5 +127,5 @@ network::ResponseShp GetCarInfo::exec()
     result["body"] = QVariant::fromValue(body);
     _context._responce->setBody(QVariant::fromValue(result));
 
-    return QSharedPointer<network::Response>();
+    return network::ResponseShp();
 }

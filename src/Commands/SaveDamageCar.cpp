@@ -67,7 +67,7 @@ network::ResponseShp SaveDamageCar::exec()
             return network::ResponseShp();
         }
 
-        quint64 idCarDamage = addQuery.value("id").toLongLong();;
+        quint64 idCarDamage = addQuery.value("id").toLongLong();
 
         for (const auto &url : listUrlsPhoto)
         {
