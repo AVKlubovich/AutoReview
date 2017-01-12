@@ -28,6 +28,16 @@ network::ResponseShp SaveCarInfo::exec()
     const auto& incomingData = _context._packet.body().toMap();
     const auto& bodyData = incomingData.value("body").toMap();
 
+    if (!bodyData.contains("id_car") ||
+        !bodyData.contains("mileage") ||
+        !bodyData.contains("insurance_end") ||
+        !bodyData.contains("diagnostic_card_end") ||
+        !bodyData.contains("id_tire"))
+    {
+        sendError("Do not send field", "field_error", signature());
+        return network::ResponseShp();
+    }
+
     bool upsertResult = false;
     if (bodyData.contains("id_record"))
     {
