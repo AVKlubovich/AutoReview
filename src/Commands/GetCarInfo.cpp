@@ -29,6 +29,14 @@ network::ResponseShp GetCarInfo::exec()
     const auto& incomingData = _context._packet.body().toMap();
     const auto& bodyData = incomingData.value("body").toMap();
 
+    if (!bodyData.contains("login") ||
+        !bodyData.contains("password") ||
+        !bodyData.contains("id_car"))
+    {
+        sendError("Do not send field", "field_error", signature());
+        return network::ResponseShp();
+    }
+
     const auto carId = bodyData["id_car"].toInt();
 
     const auto& userLogin = bodyData["login"].toString();

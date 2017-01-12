@@ -43,7 +43,7 @@ network::ResponseShp GetAcceptedCarNumbers::exec()
 
     QVariantMap userData;
     userData["type_query"] = "get_autos_data";
-//    userData["park"] = QString::number(parkId);
+    userData["park"] = QString::number(parkId);
     userData["our"] = QString::number(0);
     userData["user_login"] = userLogin;
     userData["user_pass"] = QString(QCryptographicHash::hash(userPass.toStdString().data(), QCryptographicHash::Md5).toHex());

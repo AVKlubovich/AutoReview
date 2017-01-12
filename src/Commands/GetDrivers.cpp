@@ -25,6 +25,15 @@ network::ResponseShp GetDrivers::exec()
     const auto& incomingData = _context._packet.body().toMap();
     const auto& bodyData = incomingData.value("body").toMap();
 
+    if (!bodyData.contains("login") ||
+        !bodyData.contains("password") ||
+        !bodyData.contains("id_park") ||
+        !bodyData.contains("search"))
+    {
+        sendError("Do not send field", "field_error", signature());
+        return network::ResponseShp();
+    }
+
     const auto& searchStr = bodyData["search"].toString();
     if (searchStr.count() < 3)
     {
