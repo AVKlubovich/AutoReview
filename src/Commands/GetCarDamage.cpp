@@ -26,9 +26,15 @@ network::ResponseShp GetCarDamage::exec()
     response->setHeaders(_context._packet.headers());
 
     const auto& incomingData = _context._packet.body().toMap();
-    const auto& mapData = incomingData.value("body").toMap();
+    const auto& bodyData = incomingData.value("body").toMap();
 
-    const auto autoId = mapData["id_car"].toLongLong();
+    if (!bodyData.contains("id_car"))
+    {
+        sendError("Do not send field", "field_error", signature());
+        return network::ResponseShp();
+    }
+
+    const auto autoId = bodyData["id_car"].toLongLong();
 
     const auto wraper = database::DBManager::instance().getDBWraper();
     auto selectQuery = wraper->query();

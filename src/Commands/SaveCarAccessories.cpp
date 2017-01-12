@@ -26,10 +26,17 @@ network::ResponseShp SaveCarAccessories::exec()
     response->setHeaders(_context._packet.headers());
 
     const auto& incomingData = _context._packet.body().toMap();
-    const auto& mapData = incomingData.value("body").toMap();
+    const auto& bodyData = incomingData.value("body").toMap();
 
-    const auto carId = mapData["id_car"].toLongLong();
-    const auto& listAccessories = mapData["accessories"].toList();
+    if (!bodyData.contains("id_car") ||
+        !bodyData.contains("accessories"))
+    {
+        sendError("Do not send field", "field_error", signature());
+        return network::ResponseShp();
+    }
+
+    const auto carId = bodyData["id_car"].toLongLong();
+    const auto& listAccessories = bodyData["accessories"].toList();
 
     const auto wraper = database::DBManager::instance().getDBWraper();
     auto updateQuery = wraper->query();
