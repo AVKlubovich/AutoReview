@@ -25,6 +25,14 @@ network::ResponseShp GetAcceptedCarNumbers::exec()
     const auto& incomingData = _context._packet.body().toMap();
     const auto& bodyData = incomingData.value("body").toMap();
 
+    if (!bodyData.contains("login") ||
+        !bodyData.contains("password") ||
+        !bodyData.contains("id_park"))
+    {
+        sendError("Do not send field", "field_error", signature());
+        return network::ResponseShp();
+    }
+
     const auto parkId = bodyData["id_park"].toInt();
 
     const auto& userLogin = bodyData["login"].toString();
@@ -58,10 +66,12 @@ network::ResponseShp GetAcceptedCarNumbers::exec()
         return network::ResponseShp();
     }
 
-    const auto status = map.value("status").toInt();
-    if (status < 0)
+    const auto status = map["status"].toInt();
+    if (status != 1)
     {
-        sendError("Bad response from remote server", "remove_server_error", signature());
+        const auto& errorList = map["error"].toList();
+        const auto& errorStr = errorList.first().toString();
+        sendError(errorStr, "remove_server_error", signature());
         return network::ResponseShp();
     }
 

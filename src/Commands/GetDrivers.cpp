@@ -25,6 +25,15 @@ network::ResponseShp GetDrivers::exec()
     const auto& incomingData = _context._packet.body().toMap();
     const auto& bodyData = incomingData.value("body").toMap();
 
+    if (!bodyData.contains("login") ||
+        !bodyData.contains("password") ||
+        !bodyData.contains("id_park") ||
+        !bodyData.contains("search"))
+    {
+        sendError("Do not send field", "field_error", signature());
+        return network::ResponseShp();
+    }
+
     const auto& searchStr = bodyData["search"].toString();
     if (searchStr.count() < 3)
     {
@@ -65,11 +74,12 @@ network::ResponseShp GetDrivers::exec()
         return network::ResponseShp();
     }
 
-    const auto status = map.value("status").toInt();
-    if (status < 0)
+    const auto status = map["status"].toInt();
+    if (status != 1)
     {
-        sendError("Bad response from remote server", "remove_server_error", signature());
-        qDebug() << __FUNCTION__ << map["err"].toString();
+        const auto& errorList = map["error"].toList();
+        const auto& errorStr = errorList.first().toString();
+        sendError(errorStr, "remove_server_error", signature());
         return network::ResponseShp();
     }
 

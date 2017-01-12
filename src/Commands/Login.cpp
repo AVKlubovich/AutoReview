@@ -72,8 +72,8 @@ network::ResponseShp Login::exec()
         return network::ResponseShp();
     }
 
-    const auto status = map.value("status").toInt();
-    if (status < 0)
+    const auto status = map["status"].toInt();
+    if (status != 1)
     {
         setError(ERROR_LOGIN_OR_PASSWORD, 2);
         return network::ResponseShp();

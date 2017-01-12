@@ -7,14 +7,14 @@ namespace auto_review
 {
 
     // NOTE: пересменка
-    class RemoveDriverFromAuto :
+    class RemoveDriverFromCar :
             public core::Command,
-            public core::CommandCreator<RemoveDriverFromAuto>
+            public core::CommandCreator<RemoveDriverFromCar>
     {
-        friend class QSharedPointer<RemoveDriverFromAuto>;
+        friend class QSharedPointer<RemoveDriverFromCar>;
 
     private:
-        RemoveDriverFromAuto(const Context& newContext);
+        RemoveDriverFromCar(const Context& newContext);
 
     public:
         network::ResponseShp exec() override;
