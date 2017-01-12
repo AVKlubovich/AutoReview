@@ -61,10 +61,12 @@ network::ResponseShp GetCarInfo::exec()
         return network::ResponseShp();
     }
 
-    const auto status = map.value("status").toInt();
-    if (status < 0)
+    const auto status = map["status"].toInt();
+    if (status != 1)
     {
-        sendError("Bad response from remote server", "remove_server_error", signature());
+        const auto& errorList = map["error"].toList();
+        const auto& errorStr = errorList.first().toString();
+        sendError(errorStr, "remove_server_error", signature());
         return network::ResponseShp();
     }
 

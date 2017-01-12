@@ -59,11 +59,13 @@ network::ResponseShp ChangeCarStatus::exec()
         return network::ResponseShp();
     }
 
-    const auto status = map.value("status").toInt();
-    if (status < 0)
+    const auto status = map["status"].toInt();
+    if (status != 1)
     {
-        sendError("Bad response from remote server", "remove_server_error", signature());
-        qDebug() << __FUNCTION__ << map["err"].toString();
+        const auto& errorList = map["error"].toList();
+        const auto& errorStr = errorList.first().toString();
+        sendError(errorStr, "remove_server_error", signature());
+        qDebug() << __FUNCTION__ << errorStr;
         return network::ResponseShp();
     }
 

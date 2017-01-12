@@ -7,17 +7,17 @@
 #include "web-exchange/WebRequestManager.h"
 #include "web-exchange/WebRequest.h"
 
-RegisterCommand(auto_review::AttachDriverToAuto, "attach_driver_to_car")
+RegisterCommand(auto_review::AttachDriverToCar, "attach_driver_to_car")
 
 
 using namespace auto_review;
 
-AttachDriverToAuto::AttachDriverToAuto(const Context& newContext)
+AttachDriverToCar::AttachDriverToCar(const Context& newContext)
     : Command(newContext)
 {
 }
 
-network::ResponseShp AttachDriverToAuto::exec()
+network::ResponseShp AttachDriverToCar::exec()
 {
     auto& response = _context._responce;
     response->setHeaders(_context._packet.headers());
@@ -59,11 +59,13 @@ network::ResponseShp AttachDriverToAuto::exec()
         return network::ResponseShp();
     }
 
-    const auto status = map.value("status").toInt();
-    if (status < 0)
+    const auto status = map["status"].toInt();
+    if (status != 1)
     {
-        sendError("Bad response from remote server", "remove_server_error", signature());
-        qDebug() << __FUNCTION__ << map["error"].toList().first().toString();
+        const auto& errorList = map["error"].toList();
+        const auto& errorStr = errorList.first().toString();
+        sendError(errorStr, "remove_server_error", signature());
+        qDebug() << __FUNCTION__ << errorStr;
         return network::ResponseShp();
     }
 
