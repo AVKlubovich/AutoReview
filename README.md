@@ -17,7 +17,8 @@
 * Qt5.5 >
 
 ##Документация
-[Техническое задание](https://drive.google.com/drive/folders/0B-k9g1uUW39MazRrUzMyLUxFOUk)
+[Техническое задание](https://drive.google.com/drive/folders/0B-k9g1uUW39MazRrUzMyLUxFOUk)  
+[Соглашения по оформлению кода](https://drive.google.com/open?id=0B48GpktEZIksWjNjTmdWcW53Rnc)
 
 ##Список контрибьюторов
 [Отец Александр](../../../../avklubovich @github/avklubovich)  
