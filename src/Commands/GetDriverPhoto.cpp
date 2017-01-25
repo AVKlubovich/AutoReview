@@ -106,61 +106,22 @@ network::ResponseShp GetDriverPhoto::exec()
         return network::ResponseShp();
     }
 
-    const auto& array = map["array"].toList();
-    if (array.isEmpty())
+    if (!map.contains("image"))
     {
-        sendError("Bad response from remote server", "remove_server_error", signature());
-        qDebug() << __FUNCTION__ << "error: array is empty";
+        const auto& errorStr = "photo do not sended from remote server";
+        sendError(errorStr, "remove_server_error", signature());
         return network::ResponseShp();
     }
 
-    auto infoMap = array.first().toMap();
-
-    const auto& wraper = database::DBManager::instance().getDBWraper();
-
-    const auto& selectDataStr = QString(
-        "SELECT "
-        "info_about_cars.mileage, "
-        "insurance_end, "
-        "diagnostic_card_end, "
-        "id_tire, "
-        "(SELECT maintenance.mileage FROM maintenance WHERE id_car = info_about_cars.id_car AND maintenance.is_big = 0 ORDER BY id DESC LIMIT 1) as last_maintenance, "
-        "(SELECT maintenance.mileage FROM maintenance WHERE id_car = info_about_cars.id_car AND maintenance.is_big = 1 ORDER BY id DESC LIMIT 1) as last_big_maintenance, "
-        "info_about_cars.date_create AS last_timestamp "
-        "FROM info_about_cars "
-        "INNER JOIN maintenance "
-        "ON (maintenance.id_car = info_about_cars.id_car) "
-        "WHERE info_about_cars.id_car = :carId "
-        "ORDER BY info_about_cars.id DESC LIMIT 1"
-        );
-
-    auto selectDataQuery = wraper->query();
-    selectDataQuery.prepare(selectDataStr);
-    selectDataQuery.bindValue(":carId", driverId);
-
-    const auto selectDataResult = selectDataQuery.exec();
-    if (!selectDataResult)
-    {
-        sendError("Database error", "db_error", signature());
-        qDebug() << __FUNCTION__ << selectDataQuery.lastError().text();
-        qDebug() << __FUNCTION__ << selectDataQuery.lastQuery();
-        return network::ResponseShp();
-    }
-
-    const auto& infoList = database::DBHelpers::queryToVariant(selectDataQuery);
-    if (!infoList.isEmpty())
-    {
-        const auto& dbInfo = infoList.last().toMap();
-        for (auto it = dbInfo.begin(); it != dbInfo.end(); ++it)
-            infoMap[it.key()] = it.value();
-    }
+    const auto& image = map["image"];
 
     QVariantMap head;
     head["type"] = signature();
 
     QVariantMap body;
     body["status"] = 1;
-    body["info"] = QVariant::fromValue(infoMap);
+    body["photo"] = image;
+    body["id_driver"] = driverId;
 
     QVariantMap result;
     result["head"] = QVariant::fromValue(head);
