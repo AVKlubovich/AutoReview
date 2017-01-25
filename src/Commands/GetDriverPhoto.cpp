@@ -51,9 +51,9 @@ network::ResponseShp GetDriverPhoto::exec()
     auto settings = utils::SettingsFactory::instance().settings("server-core");
     settings.beginGroup("ApiGeneral");
     QStringList urls;
-    urls << settings["UrlImg"].toString();
-    urls << settings["UrlImg"].toString();
-    urls << settings["UrlImg"].toString();
+    urls << settings["UrlImage_1"].toString();
+    urls << settings["UrlImage_2"].toString();
+    urls << settings["UrlImage_3"].toString();
     const auto& urlImg = urls.at(qrand() % urls.count());
 
     webManager->setSingleUrl(urlImg);
