@@ -56,6 +56,7 @@ Core::Core()
         { "DBManager/Password", "11" },
 
         // WebRequestManager
+        { "ApiGeneral/Url", "http://192.168.211.30:81/api/api_general_taxi_spb.php" },
         { "ApiGeneral/Login", "okk" },
     #ifdef QT_DEBUG
         { "ApiGeneral/Password", "ufhe_e7bbbewGhed16t" },
