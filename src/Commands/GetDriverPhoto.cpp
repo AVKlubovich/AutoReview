@@ -73,7 +73,7 @@ network::ResponseShp GetDriverPhoto::exec()
     userData["type_query"] = "get_image_driver";
     userData["id"] = QString::number(driverId);
     userData["CITY"] = "1";
-    userData["echo_image"] = "1";
+//    userData["echo_image"] = "1";
     userData["user_login"] = userLogin;
     userData["user_pass"] = QString(QCryptographicHash::hash(userPass.toStdString().data(), QCryptographicHash::Md5).toHex());
     const auto& driverData = QString("%1%2").arg(QString::number(driverId)).arg("drivera");
