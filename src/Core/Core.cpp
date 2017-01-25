@@ -70,6 +70,8 @@ Core::Core()
 
 bool Core::init()
 {
+    qsrand(QTime(0, 0, 0).msecsTo(QTime::currentTime()));
+
     if (!initLoger())
     {
         qWarning() << "Could not initialize logger";
