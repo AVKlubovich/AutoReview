@@ -62,6 +62,9 @@ Core::Core()
     #else
         { "ApiGeneral/Password", "" },
     #endif
+        { "ApiGeneral/UrlImage_1", "http://192.168.211.30:81/api/api_images_taxi_spb.php" },
+        { "ApiGeneral/UrlImage_2", "http://192.168.212.30:81/api/api_images_taxi_spb.php" },
+        { "ApiGeneral/UrlImage_3", "http://192.168.213.30:81/api/api_images_taxi_spb.php" },
     };
 }
 
