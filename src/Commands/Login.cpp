@@ -170,7 +170,7 @@ void Login::setError(const QString& err, const quint64 status)
     QVariantMap result;
     head["type"] = signature();
     body["status"] = status;
-    body["error"] = err;
+    body["error_string"] = err;
     result["head"] = QVariant::fromValue(head);
     result["body"] = QVariant::fromValue(body);
     _context._responce->setBody(QVariant::fromValue(result));
