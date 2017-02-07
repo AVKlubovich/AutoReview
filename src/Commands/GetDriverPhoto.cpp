@@ -1,5 +1,5 @@
 #include "Common.h"
-#include "GetCarInfo.h"
+#include "GetDriverPhoto.h"
 
 #include "server-core/Commands/CommandFactory.h"
 #include "server-core/Responce/Responce.h"
@@ -11,17 +11,20 @@
 #include "database/DBWraper.h"
 #include "database/DBHelpers.h"
 
-RegisterCommand(auto_review::GetCarInfo, "get_car_info")
+#include "utils/Settings/SettingsFactory.h"
+#include "utils/Settings/Settings.h"
+
+RegisterCommand(auto_review::GetDriverPhoto, "get_driver_photo")
 
 
 using namespace auto_review;
 
-GetCarInfo::GetCarInfo(const Context& newContext)
+GetDriverPhoto::GetDriverPhoto(const Context& newContext)
     : Command(newContext)
 {
 }
 
-network::ResponseShp GetCarInfo::exec()
+network::ResponseShp GetDriverPhoto::exec()
 {
     auto& response = _context._responce;
     response->setHeaders(_context._packet.headers());
@@ -31,13 +34,13 @@ network::ResponseShp GetCarInfo::exec()
 
     if (!bodyData.contains("login") ||
         !bodyData.contains("password") ||
-        !bodyData.contains("id_car"))
+        !bodyData.contains("id_driver"))
     {
         sendError("Do not send field", "field_error", signature());
         return network::ResponseShp();
     }
 
-    const auto carId = bodyData["id_car"].toInt();
+    const auto driverId = bodyData["id_driver"].toInt();
 
     const auto& userLogin = bodyData["login"].toString();
     const auto& userPass = bodyData["password"].toString();
@@ -45,11 +48,36 @@ network::ResponseShp GetCarInfo::exec()
     auto webManager = network::WebRequestManager::instance();
     auto webRequest = network::WebRequestShp::create("type_query");
 
+    auto settings = utils::SettingsFactory::instance().settings("server-core");
+    settings.beginGroup("ApiGeneral");
+    QStringList urls;
+    urls << settings["UrlImage_1"].toString();
+    urls << settings["UrlImage_2"].toString();
+    urls << settings["UrlImage_3"].toString();
+    const auto& urlImg = urls.at(qrand() % urls.count());
+
+    webManager->setSingleUrl(urlImg);
+
+//    http://192.168.211-213.30:81/api/api_images_taxi_spb.php?
+//    name=$NAME&
+//    pass=$PASS&
+//    type_query=get_image_driver&
+//    user_login=$USER_LOGIN&
+//    user_pass=$USER_PASS_MD5&
+//    id=1&
+//    hash=MD5($ID + drivera)&
+//    CITY=$CITY&
+//    echo_image=1
+
     QVariantMap userData;
-    userData["type_query"] = "get_autos_data";
-    userData["auto_id"] = QString::number(carId);
+    userData["type_query"] = "get_image_driver";
+    userData["id"] = QString::number(driverId);
+    userData["CITY"] = "0";
+//    userData["echo_image"] = "1";
     userData["user_login"] = userLogin;
     userData["user_pass"] = QString(QCryptographicHash::hash(userPass.toStdString().data(), QCryptographicHash::Md5).toHex());
+    const auto& driverData = QString("%1%2").arg(QString::number(driverId)).arg("drivera");
+    userData["hash"] = QString(QCryptographicHash::hash(driverData.toStdString().data(),QCryptographicHash::Md5).toHex());
     webRequest->setArguments(userData);
     webRequest->setCallback(nullptr);
 
@@ -78,68 +106,22 @@ network::ResponseShp GetCarInfo::exec()
         return network::ResponseShp();
     }
 
-    const auto& array = map["array"].toList();
-    if (array.isEmpty())
+    if (!map.contains("image"))
     {
-        sendError("Bad response from remote server", "remove_server_error", signature());
-        qDebug() << __FUNCTION__ << "error: array is empty";
+        const auto& errorStr = "photo do not sended from remote server";
+        sendError(errorStr, "remove_server_error", signature());
         return network::ResponseShp();
     }
 
-    auto infoMap = array.first().toMap();
-
-    const auto& wraper = database::DBManager::instance().getDBWraper();
-
-    const auto& selectDataStr = QString(
-        "SELECT "
-        "info_about_cars.mileage, "
-        "insurance_end, "
-        "diagnostic_card_end, "
-        "id_tire, "
-        "(SELECT maintenance.mileage FROM maintenance WHERE id_car = info_about_cars.id_car AND maintenance.is_big = 0 ORDER BY id DESC LIMIT 1) as last_maintenance, "
-        "(SELECT maintenance.mileage FROM maintenance WHERE id_car = info_about_cars.id_car AND maintenance.is_big = 1 ORDER BY id DESC LIMIT 1) as last_big_maintenance, "
-        "date_create AS last_timestamp, "
-        "osago_date, "
-        "osago_number, "
-        "pts, "
-        "srts, "
-        "tire_marka, "
-        "diagnostic_card_data, "
-        "child_restraint_means "
-        "FROM info_about_cars "
-        "INNER JOIN maintenance "
-        "ON (maintenance.id_car = info_about_cars.id_car) "
-        "WHERE info_about_cars.id_car = :carId "
-        "ORDER BY info_about_cars.id DESC LIMIT 1"
-        );
-
-    auto selectDataQuery = wraper->query();
-    selectDataQuery.prepare(selectDataStr);
-    selectDataQuery.bindValue(":carId", carId);
-
-    const auto selectDataResult = selectDataQuery.exec();
-    if (!selectDataResult)
-    {
-        sendError("Database error", "db_error", signature());
-        qDebug() << __FUNCTION__ << selectDataQuery.lastError().text();
-        qDebug() << __FUNCTION__ << selectDataQuery.lastQuery();
-        return network::ResponseShp();
-    }
-
-    const auto& infoList = database::DBHelpers::queryToVariant(selectDataQuery);
-    if (!infoList.isEmpty())
-    {
-        const auto& dbInfo = infoList.last().toMap();
-        for (auto it = dbInfo.begin(); it != dbInfo.end(); ++it)
-            infoMap[it.key()] = it.value();
-    }
+    const auto& image = map["image"];
 
     QVariantMap head;
     head["type"] = signature();
 
     QVariantMap body;
     body["status"] = 1;
-    body["info"] = QVariant::fromValue(infoMap);
+    body["photo"] = image;
+    body["id_driver"] = driverId;
 
     QVariantMap result;
     result["head"] = QVariant::fromValue(head);

@@ -78,6 +78,13 @@ bool SaveCarInfo::insertNewData(const QVariantMap& bodyData)
     const auto& insuranceEnd = bodyData["insurance_end"].toString();
     const auto& diagnosticCardEnd = bodyData["diagnostic_card_end"].toString();
     const auto tireId = bodyData["id_tire"].toInt();
+    const auto& osagoDate = bodyData["osago_date"].toString();
+    const auto osagoNumber = bodyData["osago_number"].toInt();
+    const auto& pts =bodyData["pts"].toString();
+    const auto& srts = bodyData["srts"].toString();
+    const auto& tireMarka = bodyData["tire_marka"].toString();
+    const auto& diagnosticCardData = bodyData["diagnostic_card_data"].toString();
+    const auto& childRestraintMeans = bodyData["child_restraint_means"].toString();
 
     const auto& saveCarInfoStr = QString(
         "INSERT INTO info_about_cars "
@@ -87,6 +94,13 @@ bool SaveCarInfo::insertNewData(const QVariantMap& bodyData)
             "insurance_end, "
             "diagnostic_card_end, "
             "id_tire, "
+            "osago_date, "
+            "osago_number, "
+            "pts, "
+            "srts, "
+            "tire_marka, "
+            "diagnostic_card_data, "
+            "child_restraint_means, "
             "date_create"
         ") "
         "VALUES"
@@ -96,6 +110,13 @@ bool SaveCarInfo::insertNewData(const QVariantMap& bodyData)
             ":insuranceEnd, "
             ":diagnosticCardEnd, "
             ":tireId, "
+            ":osagoDate, "
+            ":osagoNumber, "
+            ":pts, "
+            ":srts, "
+            ":tireMarka, "
+            ":diagnosticCardData, "
+            ":childRestraintMeans, "
             "now()"
         ") "
         "RETURNING id"
@@ -109,6 +130,13 @@ bool SaveCarInfo::insertNewData(const QVariantMap& bodyData)
     saveCarInfoQuery.bindValue(":insuranceEnd", insuranceEnd);
     saveCarInfoQuery.bindValue(":diagnosticCardEnd", diagnosticCardEnd);
     saveCarInfoQuery.bindValue(":tireId", tireId);
+    saveCarInfoQuery.bindValue(":osagoDate", osagoDate);
+    saveCarInfoQuery.bindValue(":osagoNumber", osagoNumber);
+    saveCarInfoQuery.bindValue(":pts", pts);
+    saveCarInfoQuery.bindValue(":srts", srts);
+    saveCarInfoQuery.bindValue(":tireMarka", tireMarka);
+    saveCarInfoQuery.bindValue(":diagnosticCardData", diagnosticCardData);
+    saveCarInfoQuery.bindValue(":childRestraintMeans", childRestraintMeans);
 
     const auto saveCarInfoResult = saveCarInfoQuery.exec();
     if (!saveCarInfoResult)
@@ -138,6 +166,13 @@ bool SaveCarInfo::updateNewData(const QVariantMap& bodyData)
     const auto& insuranceEnd = bodyData["insurance_end"].toString();
     const auto& diagnosticCardEnd = bodyData["diagnostic_card_end"].toString();
     const auto tireId = bodyData["id_tire"].toInt();
+    const auto& osagoDate = bodyData["osago_date"].toString();
+    const auto osagoNumber = bodyData["osago_number"].toInt();
+    const auto& pts =bodyData["pts"].toString();
+    const auto& srts = bodyData["srts"].toString();
+    const auto& tireMarka = bodyData["tire_marka"].toString();
+    const auto& diagnosticCardData = bodyData["diagnostic_card_data"].toString();
+    const auto& childRestraintMeans = bodyData["child_restraint_means"].toString();
 
     const auto& saveCarInfoStr = QString(
         "UPDATE info_about_cars "
@@ -145,7 +180,14 @@ bool SaveCarInfo::updateNewData(const QVariantMap& bodyData)
         "mileage = :mileage, "
         "insurance_end = :insuranceEnd, "
         "diagnostic_card_end = :diagnosticCardEnd, "
-        "id_tire = :tireId "
+        "id_tire = :tireId, "
+        "osago_date = :osagoDate, "
+        "osago_number = :osagoNumber, "
+        "pts = :pts, "
+        "srts = :srts, "
+        "tire_marka = :tireMarka, "
+        "diagnostic_card_data = :diagnosticCardData, "
+        "child_restraint_means = :childRestraintMeans "
         "WHERE id = :recordId"
         );
 
@@ -157,6 +199,13 @@ bool SaveCarInfo::updateNewData(const QVariantMap& bodyData)
     saveCarInfoQuery.bindValue(":insuranceEnd", insuranceEnd);
     saveCarInfoQuery.bindValue(":diagnosticCardEnd", diagnosticCardEnd);
     saveCarInfoQuery.bindValue(":tireId", tireId);
+    saveCarInfoQuery.bindValue(":osagoDate", osagoDate);
+    saveCarInfoQuery.bindValue(":osagoNumber", osagoNumber);
+    saveCarInfoQuery.bindValue(":pts", pts);
+    saveCarInfoQuery.bindValue(":srts", srts);
+    saveCarInfoQuery.bindValue(":tireMarka", tireMarka);
+    saveCarInfoQuery.bindValue(":diagnosticCardData", diagnosticCardData);
+    saveCarInfoQuery.bindValue(":childRestraintMeans", childRestraintMeans);
 
     const auto saveCarInfoResult = saveCarInfoQuery.exec();
     if (!saveCarInfoResult)

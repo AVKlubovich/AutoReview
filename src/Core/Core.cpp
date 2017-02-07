@@ -56,17 +56,23 @@ Core::Core()
         { "DBManager/Password", "11" },
 
         // WebRequestManager
+        { "ApiGeneral/Url", "http://192.168.211.30:81/api/api_general_taxi_spb.php" },
         { "ApiGeneral/Login", "okk" },
     #ifdef QT_DEBUG
         { "ApiGeneral/Password", "ufhe_e7bbbewGhed16t" },
     #else
         { "ApiGeneral/Password", "" },
     #endif
+        { "ApiGeneral/UrlImage_1", "http://192.168.211.30:81/api/api_images_taxi_spb.php" },
+        { "ApiGeneral/UrlImage_2", "http://192.168.212.30:81/api/api_images_taxi_spb.php" },
+        { "ApiGeneral/UrlImage_3", "http://192.168.213.30:81/api/api_images_taxi_spb.php" },
     };
 }
 
 bool Core::init()
 {
+    qsrand(QTime(0, 0, 0).msecsTo(QTime::currentTime()));
+
     if (!initLoger())
     {
         qWarning() << "Could not initialize logger";
