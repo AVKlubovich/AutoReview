@@ -28,7 +28,7 @@ network::ResponseShp WSGetStartData::exec()
     const auto& selectCarsStr = QString(
         "SELECT "
         "info_about_cars.id, "
-        "id_car, "
+        "info_about_cars.id_car, "
         "info_about_cars.mileage, "
         "insurance_end, "
         "diagnostic_card_end, "
@@ -44,9 +44,8 @@ network::ResponseShp WSGetStartData::exec()
         "diagnostic_card_data, "
         "child_restraint_means "
         "FROM info_about_cars "
-        "INNER JOIN maintenance "
-        "ON (maintenance.id_car = info_about_cars.id_car) "
 //        "WHERE info_about_cars.status = :status"
+        "WHERE info_about_cars.id IN (SELECT max(id) FROM info_about_cars GROUP BY id_car)"
         );
 
     auto selectCarsQuery = wraper->query();
@@ -71,7 +70,7 @@ network::ResponseShp WSGetStartData::exec()
     }
 
     const auto& selectDamagesStr = QString(
-        "SELECT * FROM car_damage"
+        "SELECT * FROM car_damage "
         "WHERE id_car IN (%1)"
         ).arg(carIdsList.join(","));
 
@@ -92,7 +91,7 @@ network::ResponseShp WSGetStartData::exec()
     QMap<quint64, QVariantMap> carsInfoMap;
     for (auto& carInfo : carsList)
     {
-        QVariantMap& carInfoMap = carInfo.toMap();
+        const QVariantMap& carInfoMap = carInfo.toMap();
         const quint64 carId = carInfoMap["id_car"].toULongLong();
         carsInfoMap.insert(carId, carInfoMap);
     }
@@ -102,8 +101,9 @@ network::ResponseShp WSGetStartData::exec()
         const QVariantMap& damageMap = damage.toMap();
         const quint64 carId = damageMap["id_car"].toULongLong();
         QVariantMap& carInfoMap = carsInfoMap[carId];
-        QVariantList& damageList = carInfoMap["damages"].toList();
+        QVariantList damageList = carInfoMap["damages"].toList();
         damageList << damageMap;
+        carInfoMap["damages"] = damageList;
     }
 
     QVariantMap head;
@@ -111,6 +111,10 @@ network::ResponseShp WSGetStartData::exec()
 
     QVariantMap body;
     body["status"] = 1;
+    QVariantList carsListV;
+    for (const auto& car : carsInfoMap.values())
+        carsListV << QVariant::fromValue(car);
+    body["cars"] = QVariant::fromValue(carsListV);
 
     QVariantMap result;
     result["head"] = QVariant::fromValue(head);
