@@ -16,6 +16,7 @@ using namespace auto_review;
 SaveDamageCar::SaveDamageCar(const Context& newContext)
     : Command(newContext)
 {
+    _wraper = database::DBManager::instance().getDBWraper();
 }
 
 network::ResponseShp SaveDamageCar::exec()
@@ -29,6 +30,8 @@ network::ResponseShp SaveDamageCar::exec()
 
     const auto carId = incomingData["id_car"].toInt();
     const auto& damages = incomingData["damages"].toList();
+
+    _wraper->startTransaction();
 
     for (const auto& damage : damages)
     {
@@ -46,13 +49,13 @@ network::ResponseShp SaveDamageCar::exec()
 
         if (damageId == -1)
         {
+            _wraper->rollback();
             return network::ResponseShp();
         }
 
         const auto& listUrlsPhoto = mapDamage["urls"].toList();
 
-        const auto wraper = database::DBManager::instance().getDBWraper();
-        auto insertPhotoQuery = wraper->query();
+        auto insertPhotoQuery = _wraper->query();
 
         for (const auto &url : listUrlsPhoto)
         {
@@ -69,10 +72,18 @@ network::ResponseShp SaveDamageCar::exec()
             if (!insertPhotoResult)
             {
                 sendError("error insert photos", "error", signature());
+                _wraper->rollback();
                 qDebug() << insertPhotoQuery.lastError().text();
                 return network::ResponseShp();
             }
         }
+    }
+
+    const bool commitOk = _wraper->commit();
+    if (!commitOk)
+    {
+        _wraper->rollback();
+        return network::ResponseShp();
     }
 
     QVariantMap head;
@@ -98,8 +109,7 @@ const qint64 SaveDamageCar::updateDamage(const QVariantMap& damageMap)
 
 const qint64 SaveDamageCar::insertDamage(const int carId, const QVariantMap& damageMap)
 {
-    const auto wraper = database::DBManager::instance().getDBWraper();
-    auto insertDamageQuery = wraper->query();
+    auto insertDamageQuery = _wraper->query();
 
     const auto idElementDamage = damageMap["id_element"].toInt();
     const auto typeDamage = damageMap["type_damage"].toInt();
