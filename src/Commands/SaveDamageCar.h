@@ -17,6 +17,10 @@ namespace auto_review
 
     public:
         network::ResponseShp exec() override;
+
+    private:
+        const qint64 updateDamage(const QVariantMap& damageMap);
+        const qint64 insertDamage(const int carId, const QVariantMap& damageMap);
     };
 
 }
