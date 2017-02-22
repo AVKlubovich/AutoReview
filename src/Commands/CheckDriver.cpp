@@ -28,54 +28,62 @@ network::ResponseShp CheckDriver::exec()
     const auto& incomingData = _context._packet.body().toMap();
     const auto& bodyData = incomingData.value("body").toMap();
 
-    if (!bodyData.contains("id_driver") ||
-        !bodyData.contains("pin"))
+    if (!bodyData.contains("id_driver"))
     {
         sendError("Do not send field", "field_error", signature());
         return network::ResponseShp();
     }
-
     const auto driverId = bodyData["id_driver"].toLongLong();
-    const auto pin = bodyData["pin"].toLongLong();
 
-    const auto wraper = database::DBManager::instance().getDBWraper();
-
-    const auto& selectPinStr = QString(
-        "SELECT pin "
-        "FROM drivers "
-        "WHERE id = :driverId"
-        );
-    auto selectPinQuery = wraper->query();
-    selectPinQuery.prepare(selectPinStr);
-    selectPinQuery.bindValue(":driverId", driverId);
-
-    const bool selectPinResult = selectPinQuery.exec();
-    if (!selectPinResult)
+    if (!bodyData.contains("pin"))
     {
-        sendError("Error select drivers pin", "db_error", signature());
-        qDebug() << selectPinQuery.lastError().text();
-        return network::ResponseShp();
-    }
-
-    const auto& resultList = database::DBHelpers::queryToVariantMap(selectPinQuery);
-    if (resultList.isEmpty())
-    {
-        if (!createDefaultPin(driverId))
+        if (createDefaultPin(driverId))
         {
-            sendError("Drivers pin not found", "db_error", signature());
-            qDebug() << __FUNCTION__ << "Drivers pin not found";
+            sendError("Can not create drivers pin", "db_error", signature());
+            qDebug() << __FUNCTION__ << "Can not create drivers pin";
             return network::ResponseShp();
         }
     }
     else
     {
-        const qint64 dbPin = resultList.first()["pin"].toLongLong();
+        const auto pin = bodyData["pin"].toLongLong();
 
-        if (dbPin != pin)
+        const auto wraper = database::DBManager::instance().getDBWraper();
+
+        const auto& selectPinStr = QString(
+            "SELECT pin "
+            "FROM drivers "
+            "WHERE id = :driverId"
+            );
+        auto selectPinQuery = wraper->query();
+        selectPinQuery.prepare(selectPinStr);
+        selectPinQuery.bindValue(":driverId", driverId);
+
+        const bool selectPinResult = selectPinQuery.exec();
+        if (!selectPinResult)
         {
-            sendError("Drivers pin is not valid", "db_error", signature());
+            sendError("Error select drivers pin", "db_error", signature());
+            qDebug() << selectPinQuery.lastError().text();
+            return network::ResponseShp();
+        }
+
+        const auto& resultList = database::DBHelpers::queryToVariantMap(selectPinQuery);
+        if (resultList.isEmpty())
+        {
+            sendError("Drivers pin not found", "db_error", signature());
             qDebug() << __FUNCTION__ << "Drivers pin not found";
             return network::ResponseShp();
+        }
+        else
+        {
+            const qint64 dbPin = resultList.first()["pin"].toLongLong();
+
+            if (dbPin != pin)
+            {
+                sendError("Drivers pin is not valid", "db_error", signature());
+                qDebug() << __FUNCTION__ << "Drivers pin not found";
+                return network::ResponseShp();
+            }
         }
     }
 
