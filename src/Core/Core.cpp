@@ -126,7 +126,7 @@ bool Core::initLoger()
     // TODO: http://134.17.26.128:8080/browse/OKK-125
     return true;
 
-    auto settings = utils::SettingsFactory::instance().settings("server-core");
+    auto settings = utils::SettingsFactory::instance().currentSettings();
     settings.beginGroup("Log");
 
     _logger = QSharedPointer<utils::Logger>::create();
@@ -164,7 +164,7 @@ bool Core::initLoger()
 
 bool Core::initServer()
 {
-    auto settings = utils::SettingsFactory::instance().settings("server-core");
+    auto settings = utils::SettingsFactory::instance().currentSettings();
 
     _server = core::ServerShp::create();
 
@@ -190,7 +190,7 @@ bool Core::initServer()
 
 bool Core::initDBManager()
 {
-    auto settings = utils::SettingsFactory::instance().settings("server-core");
+    auto settings = utils::SettingsFactory::instance().currentSettings();
     settings.beginGroup("DBManager");
 
     database::DBManager::DBSettings dbSettings;
@@ -216,7 +216,7 @@ bool Core::initCommandFactory()
 
 bool Core::initWebManager()
 {
-    auto settings = utils::SettingsFactory::instance().settings("server-core");
+    auto settings = utils::SettingsFactory::instance().currentSettings();
     settings.beginGroup("ApiGeneral");
 
     const auto login = settings["Login"].toString();
