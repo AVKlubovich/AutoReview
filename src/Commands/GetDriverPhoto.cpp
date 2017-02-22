@@ -48,7 +48,7 @@ network::ResponseShp GetDriverPhoto::exec()
     auto webManager = network::WebRequestManager::instance();
     auto webRequest = network::WebRequestShp::create("type_query");
 
-    auto settings = utils::SettingsFactory::instance().settings("server-core");
+    auto settings = utils::SettingsFactory::instance().currentSettings();
     settings.beginGroup("ApiGeneral");
     QStringList urls;
     urls << settings["UrlImage_1"].toString();

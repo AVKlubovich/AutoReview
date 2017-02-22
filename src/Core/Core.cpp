@@ -23,54 +23,12 @@ using namespace auto_review;
 
 Core::Core()
 {
-    QDir::setCurrent(QCoreApplication::applicationDirPath());
-
-    utils::Settings::Options config = { "configuration/server.ini", true };
-    utils::SettingsFactory::instance().registerSettings("server-core", config);
-
-    auto settings = utils::SettingsFactory::instance().settings("server-core");
-    settings =
-    {
-        // FastCGI
-        { "FastCGI/ConnectionString", "localhost:26000" },
-        { "FastCGI/Backlog", 1 },      // Number of requests in queue
-        { "FastCGI/MaxJobs", 1 },      // Maximum number of jobs
-        { "FastCGI/LogTraffic", true },// Logging of HTTP traffic enabled
-
-        // Multi-threading (0 - auto detect)
-        { "MultiThreading/FastThreadCound", 0 },
-        { "MultiThreading/LongThreadCound", 0 },
-
-        // Logs
-        { "Log/FlushInterval", 1000 },
-        { "Log/PrefixName", "auto_review.log" },
-        { "Log/Dir", "./logs/" },
-        { "Log/MaxSize", 134217728 },   // 100 mb
-
-        // DBManager
-        { "DBManager/Host", "192.168.202.222" },
-        { "DBManager/Name", "auto_review_db" },
-        { "DBManager/Type", "QPSQL" },
-        { "DBManager/Port", 5432 },
-        { "DBManager/User", "postgres" },
-        { "DBManager/Password", "11" },
-
-        // WebRequestManager
-        { "ApiGeneral/Url", "http://192.168.211.30:81/api/api_general_taxi_spb.php" },
-        { "ApiGeneral/Login", "okk" },
-    #ifdef QT_DEBUG
-        { "ApiGeneral/Password", "ufhe_e7bbbewGhed16t" },
-    #else
-        { "ApiGeneral/Password", "" },
-    #endif
-        { "ApiGeneral/UrlImage_1", "http://192.168.211.30:81/api/api_images_taxi_spb.php" },
-        { "ApiGeneral/UrlImage_2", "http://192.168.212.30:81/api/api_images_taxi_spb.php" },
-        { "ApiGeneral/UrlImage_3", "http://192.168.213.30:81/api/api_images_taxi_spb.php" },
-    };
 }
 
 bool Core::init()
 {
+    readConfig();
+
     qsrand(QTime(0, 0, 0).msecsTo(QTime::currentTime()));
 
     if (!initLoger())
@@ -111,6 +69,56 @@ void Core::done()
 {
     _server.reset();
     _logger.reset();
+}
+
+void Core::readConfig()
+{
+    QDir::setCurrent(QCoreApplication::applicationDirPath());
+
+    utils::Settings::Options config = { "configuration/server.ini", true };
+    utils::SettingsFactory::instance().registerSettings("server", config);
+
+    auto settings = utils::SettingsFactory::instance().settings("server");
+    settings =
+    {
+        // FastCGI
+        { "FastCGI/ConnectionString", "localhost:26000" },
+        { "FastCGI/Backlog", 1 },      // Number of requests in queue
+        { "FastCGI/MaxJobs", 1 },      // Maximum number of jobs
+        { "FastCGI/LogTraffic", true },// Logging of HTTP traffic enabled
+
+        // Multi-threading (0 - auto detect)
+        { "MultiThreading/FastThreadCound", 0 },
+        { "MultiThreading/LongThreadCound", 0 },
+
+        // Logs
+        { "Log/FlushInterval", 1000 },
+        { "Log/PrefixName", "auto_review.log" },
+        { "Log/Dir", "./logs/" },
+        { "Log/MaxSize", 134217728 },   // 100 mb
+
+        // DBManager
+        { "DBManager/Host", "192.168.202.222" },
+        { "DBManager/Name", "auto_review_db" },
+        { "DBManager/Type", "QPSQL" },
+        { "DBManager/Port", 5432 },
+        { "DBManager/User", "postgres" },
+        { "DBManager/Password", "11" },
+
+        // WebRequestManager
+        { "ApiGeneral/Url", "http://192.168.211.30:81/api/api_general_taxi_spb.php" },
+        { "ApiGeneral/Login", "okk" },
+    #ifdef QT_DEBUG
+        { "ApiGeneral/Password", "ufhe_e7bbbewGhed16t" },
+    #else
+        { "ApiGeneral/Password", "" },
+    #endif
+        { "ApiGeneral/UrlImage_1", "http://192.168.211.30:81/api/api_images_taxi_spb.php" },
+        { "ApiGeneral/UrlImage_2", "http://192.168.212.30:81/api/api_images_taxi_spb.php" },
+        { "ApiGeneral/UrlImage_3", "http://192.168.213.30:81/api/api_images_taxi_spb.php" },
+    };
+
+    utils::SettingsFactory::instance().setCurrentSettings("server");
 }
 
 bool Core::initLoger()
