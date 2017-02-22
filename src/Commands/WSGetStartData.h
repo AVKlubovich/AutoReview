@@ -18,6 +18,14 @@ namespace auto_review
 
     public:
         network::ResponseShp exec() override;
+
+    private:
+        QVariantList getRemoteData(const QString& carIdsList, bool& ok);
+        QVariantList getDamages(const QString& carIdsList, bool& ok);
+        QVariantList getPhotos(const QString& damageIdsList, bool& ok);
+        QVariantList checkIpAddress(const QVariantList& photosList);
+
+        void sendEmptyResponse();
     };
 
 }
