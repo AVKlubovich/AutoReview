@@ -8,6 +8,8 @@
 #include "database/DBManager.h"
 #include "database/DBWraper.h"
 
+#include "Definitions.h"
+
 RegisterCommand(auto_review::CheckDriver, "check_driver")
 
 
@@ -103,8 +105,6 @@ network::ResponseShp CheckDriver::exec()
 
 bool CheckDriver::createDefaultPin(const qint64 driverId)
 {
-    const qint64 defaultPin = 1111;
-
     const auto wraper = database::DBManager::instance().getDBWraper();
 
     const auto& insertPinStr = QString(
@@ -116,7 +116,7 @@ bool CheckDriver::createDefaultPin(const qint64 driverId)
     auto insertPinQuery = wraper->query();
     insertPinQuery.prepare(insertPinStr);
     insertPinQuery.bindValue(":driverId", driverId);
-    insertPinQuery.bindValue(":pin", defaultPin);
+    insertPinQuery.bindValue(":pin", DEFAULT_DRIVER_PIN);
 
     const bool insertPinResult = insertPinQuery.exec();
     if (!insertPinResult)
