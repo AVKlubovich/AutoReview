@@ -39,7 +39,7 @@ network::ResponseShp CheckDriver::exec()
 
     if (!bodyData.contains("pin"))
     {
-        if (createDefaultPin(driverId))
+        if (!createDefaultPin(driverId))
         {
             sendError("Can not create drivers pin", "db_error", signature());
             qDebug() << __FUNCTION__ << "Can not create drivers pin";
