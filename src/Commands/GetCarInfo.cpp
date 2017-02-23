@@ -231,8 +231,10 @@ bool GetCarInfo::informDriver(const QVariantMap& infoData, const quint64 driverP
 //    const QString& driverPhone = infoData["phone_number"].toString();
     const QString& driverPhone = QString("+375295836603");
 
-    const auto& userLogin = infoData["login"].toString();
-    const auto& userPass = infoData["password"].toString();
+    const auto& incomingData = _context._packet.body().toMap();
+    const auto& bodyData = incomingData.value("body").toMap();
+    const auto& userLogin = bodyData["login"].toString();
+    const auto& userPass = bodyData["password"].toString();
 
     QVariantMap userData;
     userData["type_query"] = "send_sms_api";
@@ -268,4 +270,6 @@ bool GetCarInfo::informDriver(const QVariantMap& infoData, const quint64 driverP
         qDebug() << __FUNCTION__ << "error:" << errorList;
         return false;
     }
+
+    return true;
 }
