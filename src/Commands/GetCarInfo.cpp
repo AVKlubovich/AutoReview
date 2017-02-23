@@ -191,9 +191,9 @@ bool GetCarInfo::checkDriversPin(const QVariantMap& data)
 
     const QString& insertPinStr = QString(
         "INSERT INTO drivers "
-        "(id, pin) "
+        "(id, pin, date_last_change) "
         "VALUES "
-        "(:driverId, :pin)"
+        "(:driverId, :pin, now())"
         );
 
     auto insertPinQuery = wraper->query();
