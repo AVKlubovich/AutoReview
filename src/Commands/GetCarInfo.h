@@ -18,6 +18,10 @@ namespace auto_review
 
     public:
         network::ResponseShp exec() override;
+
+    private:
+        bool checkDriversPin(const QVariantMap& data);
+        bool informDriver(const QVariantMap& infoData, const quint64 driverPin);
     };
 
 }
