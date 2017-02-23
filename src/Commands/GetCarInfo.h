@@ -21,7 +21,7 @@ namespace auto_review
 
     private:
         bool checkDriversPin(const QVariantMap& data);
-        bool informDriver(const QVariantMap& infoData, const quint64 driverPin);
+        bool informDriver(const QString& driverPhone, const quint64 driverPin);
     };
 
 }

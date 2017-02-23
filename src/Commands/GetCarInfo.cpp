@@ -211,7 +211,7 @@ bool GetCarInfo::checkDriversPin(const QVariantMap& data)
         return false;
     }
 
-    if (!informDriver(data, newPin))
+    if (!informDriver(data["phone_number"].toString(), newPin))
     {
         sendError("Can not inform driver about his new pin", "remote_server_error", signature());
         return false;
@@ -220,7 +220,7 @@ bool GetCarInfo::checkDriversPin(const QVariantMap& data)
     return true;
 }
 
-bool GetCarInfo::informDriver(const QVariantMap& infoData, const quint64 driverPin)
+bool GetCarInfo::informDriver(const QString& driverPhone, const quint64 driverPin)
 {
     auto webManager = network::WebRequestManager::instance();
     auto webRequest = network::WebRequestShp::create("type_query");
@@ -228,18 +228,18 @@ bool GetCarInfo::informDriver(const QVariantMap& infoData, const quint64 driverP
     const QString& smsText = QString(
         "Ваш новый pin для сдачи и получения машины: %1")
         .arg(driverPin);
-//    const QString& driverPhone = infoData["phone_number"].toString();
-    const QString& driverPhone = QString("+375295836603");
+    const QString& myPhone = QString("+375295836603");
 
     const auto& incomingData = _context._packet.body().toMap();
     const auto& bodyData = incomingData.value("body").toMap();
-    const auto& userLogin = bodyData["login"].toString();
-    const auto& userPass = bodyData["password"].toString();
+    const QString& userLogin = bodyData["login"].toString();
+    const QString& userPass = bodyData["password"].toString();
 
     QVariantMap userData;
     userData["type_query"] = "send_sms_api";
     userData["sms_text"] = smsText;
-    userData["sms_phone"] = driverPhone;
+    userData["sms_phone"] = myPhone;
+//    userData["sms_phone"] = driverPhone;
     userData["user_login"] = userLogin;
     userData["user_pass"] = QString(QCryptographicHash::hash(userPass.toStdString().data(), QCryptographicHash::Md5).toHex());
     webRequest->setArguments(userData);
