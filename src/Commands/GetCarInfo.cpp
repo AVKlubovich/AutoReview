@@ -228,7 +228,6 @@ bool GetCarInfo::informDriver(const QString& driverPhone, const quint64 driverPi
     const QString& smsText = QString(
         "Ваш новый pin для сдачи и получения машины: %1")
         .arg(driverPin);
-    const QString& myPhone = QString("+375295836603");
 
     const auto& incomingData = _context._packet.body().toMap();
     const auto& bodyData = incomingData.value("body").toMap();
@@ -238,8 +237,7 @@ bool GetCarInfo::informDriver(const QString& driverPhone, const quint64 driverPi
     QVariantMap userData;
     userData["type_query"] = "send_sms_api";
     userData["sms_text"] = smsText;
-    userData["sms_phone"] = myPhone;
-//    userData["sms_phone"] = driverPhone;
+    userData["sms_phone"] = driverPhone;
     userData["user_login"] = userLogin;
     userData["user_pass"] = QString(QCryptographicHash::hash(userPass.toStdString().data(), QCryptographicHash::Md5).toHex());
     webRequest->setArguments(userData);
