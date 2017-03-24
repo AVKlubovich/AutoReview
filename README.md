@@ -1,14 +1,14 @@
 # AutoReview server
 
-##Описание проекта
+## Описание проекта
 Система для отправки на линию машин.  
 Серверная часть.
 
-##Используемые технологии
+## Используемые технологии
 [C++14](https://ru.wikipedia.org/wiki/C%2B%2B14)  
 [Qt](https://ru.wikipedia.org/wiki/Qt)
 
-##Системные требования
+## Системные требования
 * Windows; Linux
 * nginx
 * PostgreSql v9.4 и выше
@@ -16,10 +16,10 @@
 * apache
 * Qt5.5 >
 
-##Документация
+## Документация
 [Техническое задание](https://drive.google.com/drive/folders/0B-k9g1uUW39MazRrUzMyLUxFOUk)  
 [Соглашения по оформлению кода](https://drive.google.com/open?id=0B48GpktEZIksWjNjTmdWcW53Rnc)
 
-##Список контрибьюторов
+## Список контрибьюторов
 [Отец Александр](../../../../avklubovich @github/avklubovich)  
 [Санёчек](../../../../AlexandrDedckov @github/AlexandrDedckov)
