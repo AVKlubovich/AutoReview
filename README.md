@@ -21,5 +21,5 @@
 [Соглашения по оформлению кода](https://drive.google.com/open?id=0B48GpktEZIksWjNjTmdWcW53Rnc)
 
 ## Список контрибьюторов
-[Отец Александр](../../../../avklubovich @github/avklubovich)  
-[Санёчек](../../../../AlexandrDedckov @github/AlexandrDedckov)
+[Отец Александр](../../../../avklubovich)  
+[Санёчек](../../../../AlexandrDedckov)
