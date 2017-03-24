@@ -89,6 +89,13 @@ network::ResponseShp GetCarInfo::exec()
     auto infoMap = array.first().toMap();
 
     const auto& wraper = database::DBManager::instance().getDBWraper();
+    wraper->startTransaction();
+
+    if (!checkDriversPin(infoMap))
+    {
+        wraper->rollback();
+        return network::ResponseShp();
+    }
 
     const auto& selectDataStr = QString(
         "SELECT "
@@ -120,6 +127,7 @@ network::ResponseShp GetCarInfo::exec()
     const auto selectDataResult = selectDataQuery.exec();
     if (!selectDataResult)
     {
+        wraper->rollback();
         sendError("Database error", "db_error", signature());
         qDebug() << __FUNCTION__ << selectDataQuery.lastError().text();
         qDebug() << __FUNCTION__ << selectDataQuery.lastQuery();
@@ -134,6 +142,8 @@ network::ResponseShp GetCarInfo::exec()
             infoMap[it.key()] = it.value();
     }
 
+    wraper->commit();
+
     QVariantMap head;
     head["type"] = signature();
 
@@ -147,4 +157,117 @@ network::ResponseShp GetCarInfo::exec()
     _context._responce->setBody(QVariant::fromValue(result));
 
     return network::ResponseShp();
+}
+
+bool GetCarInfo::checkDriversPin(const QVariantMap& data)
+{
+    const auto& wraper = database::DBManager::instance().getDBWraper();
+
+    const QString& selectPinStr = QString(
+        "SELECT * "
+        "FROM drivers "
+        "WHERE id = :driverId"
+        );
+
+    const quint64 driverId = data["id_driver"].toULongLong();
+    auto selectPinQuery = wraper->query();
+    selectPinQuery.prepare(selectPinStr);
+    selectPinQuery.bindValue(":driverId", driverId);
+
+    const bool selectPinResult = selectPinQuery.exec();
+    if (!selectPinResult)
+    {
+        sendError("Can not select drivers pin", "db_error", signature());
+        qDebug() << __FUNCTION__ << selectPinQuery.lastError().text();
+        qDebug() << __FUNCTION__ << selectPinQuery.lastQuery();
+        return false;
+    }
+
+    const auto& resultList = database::DBHelpers::queryToVariantMap(selectPinQuery);
+    if (!resultList.isEmpty())
+    {
+        return true;
+    }
+
+    const QString& insertPinStr = QString(
+        "INSERT INTO drivers "
+        "(id, pin, date_last_change) "
+        "VALUES "
+        "(:driverId, :pin, now())"
+        );
+
+    auto insertPinQuery = wraper->query();
+    insertPinQuery.prepare(insertPinStr);
+    insertPinQuery.bindValue(":driverId", driverId);
+    const quint64 newPin = qrand() % 10000;
+    insertPinQuery.bindValue(":pin", newPin);
+
+    const bool insertPinResult = insertPinQuery.exec();
+    if (!insertPinResult)
+    {
+        sendError("Can not insert new pin", "db_error", signature());
+        qDebug() << __FUNCTION__ << insertPinQuery.lastError().text();
+        qDebug() << __FUNCTION__ << insertPinQuery.lastQuery();
+        return false;
+    }
+
+    if (!informDriver(data["phone_number"].toString(), newPin))
+    {
+        sendError("Can not inform driver about his new pin", "remote_server_error", signature());
+        return false;
+    }
+
+    return true;
+}
+
+bool GetCarInfo::informDriver(const QString& driverPhone, const quint64 driverPin)
+{
+    auto webManager = network::WebRequestManager::instance();
+    auto webRequest = network::WebRequestShp::create("type_query");
+
+    const QString& smsText = QString(
+        "Ваш новый pin для сдачи и получения машины: %1")
+        .arg(driverPin);
+
+    const auto& incomingData = _context._packet.body().toMap();
+    const auto& bodyData = incomingData.value("body").toMap();
+    const QString& userLogin = bodyData["login"].toString();
+    const QString& userPass = bodyData["password"].toString();
+
+    QVariantMap userData;
+    userData["type_query"] = "send_sms_api";
+    userData["sms_text"] = smsText;
+    userData["sms_phone"] = driverPhone;
+    userData["user_login"] = userLogin;
+    userData["user_pass"] = QString(QCryptographicHash::hash(userPass.toStdString().data(), QCryptographicHash::Md5).toHex());
+    webRequest->setArguments(userData);
+    webRequest->setCallback(nullptr);
+
+    webManager->sendRequestCurrentThread(webRequest);
+
+    const auto& data = webRequest->reply();
+    webRequest->release();
+
+    const auto& doc = QJsonDocument::fromJson(data);
+    const auto& jobj = doc.object();
+    const auto& map = jobj.toVariantMap();
+
+    if (!map.contains("status"))
+    {
+        sendError("Bad response from remote server", "remove_server_error", signature());
+        qDebug() << __FUNCTION__ << "error: Bad response from remote server";
+        return false;
+    }
+
+    const auto status = map["status"].toInt();
+    if (status != 1)
+    {
+        const auto& errorList = map["error"].toList();
+        const auto& errorStr = errorList.first().toString();
+        sendError(errorStr, "remove_server_error", signature());
+        qDebug() << __FUNCTION__ << "error:" << errorList;
+        return false;
+    }
+
+    return true;
 }

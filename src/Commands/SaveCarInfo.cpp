@@ -94,7 +94,7 @@ bool SaveCarInfo::insertNewData(const QVariantMap& bodyData)
             "insurance_end, "
             "diagnostic_card_end, "
             "id_tire, "
-            "osago_date, "
+            "%1"
             "osago_number, "
             "pts, "
             "srts, "
@@ -110,7 +110,7 @@ bool SaveCarInfo::insertNewData(const QVariantMap& bodyData)
             ":insuranceEnd, "
             ":diagnosticCardEnd, "
             ":tireId, "
-            ":osagoDate, "
+            "%2"
             ":osagoNumber, "
             ":pts, "
             ":srts, "
@@ -120,7 +120,9 @@ bool SaveCarInfo::insertNewData(const QVariantMap& bodyData)
             "now()"
         ") "
         "RETURNING id"
-        );
+        )
+        .arg(!osagoDate.isEmpty() ? "osago_date, " : "")
+        .arg(!osagoDate.isEmpty() ? ":osagoDate, " : "");
 
     const auto wraper = database::DBManager::instance().getDBWraper();
     auto saveCarInfoQuery = wraper->query();
@@ -130,7 +132,8 @@ bool SaveCarInfo::insertNewData(const QVariantMap& bodyData)
     saveCarInfoQuery.bindValue(":insuranceEnd", insuranceEnd);
     saveCarInfoQuery.bindValue(":diagnosticCardEnd", diagnosticCardEnd);
     saveCarInfoQuery.bindValue(":tireId", tireId);
-    saveCarInfoQuery.bindValue(":osagoDate", osagoDate);
+    if (!osagoDate.isEmpty())
+        saveCarInfoQuery.bindValue(":osagoDate", osagoDate);
     saveCarInfoQuery.bindValue(":osagoNumber", osagoNumber);
     saveCarInfoQuery.bindValue(":pts", pts);
     saveCarInfoQuery.bindValue(":srts", srts);
@@ -181,7 +184,7 @@ bool SaveCarInfo::updateNewData(const QVariantMap& bodyData)
         "insurance_end = :insuranceEnd, "
         "diagnostic_card_end = :diagnosticCardEnd, "
         "id_tire = :tireId, "
-        "osago_date = :osagoDate, "
+        "%1"
         "osago_number = :osagoNumber, "
         "pts = :pts, "
         "srts = :srts, "
@@ -189,7 +192,8 @@ bool SaveCarInfo::updateNewData(const QVariantMap& bodyData)
         "diagnostic_card_data = :diagnosticCardData, "
         "child_restraint_means = :childRestraintMeans "
         "WHERE id = :recordId"
-        );
+        )
+        .arg(!osagoDate.isEmpty() ? "osago_date = :osagoDate, " : "");
 
     const auto wraper = database::DBManager::instance().getDBWraper();
     auto saveCarInfoQuery = wraper->query();
@@ -199,7 +203,8 @@ bool SaveCarInfo::updateNewData(const QVariantMap& bodyData)
     saveCarInfoQuery.bindValue(":insuranceEnd", insuranceEnd);
     saveCarInfoQuery.bindValue(":diagnosticCardEnd", diagnosticCardEnd);
     saveCarInfoQuery.bindValue(":tireId", tireId);
-    saveCarInfoQuery.bindValue(":osagoDate", osagoDate);
+    if (!osagoDate.isEmpty())
+        saveCarInfoQuery.bindValue(":osagoDate", osagoDate);
     saveCarInfoQuery.bindValue(":osagoNumber", osagoNumber);
     saveCarInfoQuery.bindValue(":pts", pts);
     saveCarInfoQuery.bindValue(":srts", srts);

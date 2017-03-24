@@ -32,6 +32,7 @@ namespace auto_review
         void done();
 
     private:
+        void readConfig();
         bool initLoger();
         bool initServer();
         bool initDBManager();

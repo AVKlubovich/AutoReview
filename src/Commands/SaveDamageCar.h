@@ -3,6 +3,12 @@
 #include "server-core/Commands/UserCommand.h"
 
 
+namespace database
+{
+    class DBWraper;
+    typedef QSharedPointer<DBWraper> DBWraperShp;
+}
+
 namespace auto_review
 {
 
@@ -17,6 +23,13 @@ namespace auto_review
 
     public:
         network::ResponseShp exec() override;
+
+    private:
+        const qint64 updateDamage(const QVariantMap& damageMap);
+        const qint64 insertDamage(const int carId, const QVariantMap& damageMap);
+
+        private:
+        database::DBWraperShp _wraper;
     };
 
 }
